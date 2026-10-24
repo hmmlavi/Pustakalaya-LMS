@@ -10,12 +10,11 @@ import io
 from typing import Any, Sequence
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import joinedload, selectinload, sessionmaker
+from sqlalchemy.orm import joinedload, sessionmaker
 
 from app.domain.enums import (
     CopyStatus,
     FineStatus,
-    ImportDisposition,
     LoanStatus,
     MembershipStatus,
     ReservationStatus,
@@ -45,7 +44,6 @@ from app.repositories import (
     ImportBatchRepository,
     LoanRepository,
     Page,
-    ReservationRepository,
     paginate_statement,
 )
 from app.services.fine_service import FineService

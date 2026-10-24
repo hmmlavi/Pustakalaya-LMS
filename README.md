@@ -115,7 +115,7 @@ python run.py
 ## Project Structure & Documentation
 
 ```text
-PUSTAKALAYA/
+Pustakalaya-LMS/
 ├── app/
 │   ├── config.py                # Environment configuration & cross-platform SQLite path resolution
 │   ├── domain/                  # Pure domain entities, enums, ISBN/Money value objects, state machines, policies
@@ -138,6 +138,13 @@ PUSTAKALAYA/
 ├── instance/                    # Git-ignored runtime SQLite DB, logs, and generated historical fixture
 └── run.py                       # Local WSGI/Flask server entrypoint
 ```
+
+## Continuous integration
+
+The [`CI` workflow](.github/workflows/ci.yml) runs on pushes to `main` and on pull requests targeting `main`.
+It installs the documented development dependencies, checks dependency consistency, verifies a fresh Alembic
+database migration, and runs the complete pytest suite. Windows packaging and release publication remain isolated
+to the tagged-release workflow.
 
 ---
 

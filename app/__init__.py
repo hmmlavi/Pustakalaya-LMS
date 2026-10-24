@@ -12,7 +12,7 @@ from flask import Flask, render_template, request
 from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from app.config import INSTANCE_DIR, AppConfig
+from app.config import AppConfig
 from app.domain.enums import UserRole
 from app.domain.value_objects import ZERO_MONEY, quantize_money
 from app.infrastructure.database import create_db_engine, create_session_factory

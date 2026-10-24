@@ -27,9 +27,60 @@ jobs:
       - name: Verify release files
         shell: pwsh
         run: |
-          $files = Get-ChildItem dist\release
-          if ($files.Count -lt 3) { throw "Release output is incomplete" }
-          if ((Get-Item dist\release\Pustakalaya.exe).Length -le 0) { throw "Executable is empty" }
+          $releaseDir = Resolve-Path dist\release
+          $expected = @(
+            "Pustakalaya.exe",
+            "Pustakalaya-windows-portable.zip",
+            "SHA256SUMS.txt"
+          )
+          $actual = @(Get-ChildItem -LiteralPath $releaseDir -File | Select-Object -ExpandProperty Name)
+          if (@(Compare-Object -ReferenceObject $expected -DifferenceObject $actual).Count -ne 0) {
+            throw "Release output does not contain exactly the expected artifact set: $($actual -join ', ')"
+          }
+          foreach ($name in $expected) {
+            $path = Join-Path $releaseDir $name
+            if ((Get-Item -LiteralPath $path).Length -le 0) { throw "Artifact is empty: $name" }
+          }
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = [System.IO.Compression.ZipFile]::OpenRead((Join-Path $releaseDir "Pustakalaya-windows-portable.zip"))
+          try {
+            if (-not @($archive.Entries | Where-Object { $_.FullName -eq "Pustakalaya.exe" }).Count) {
+              throw "Portable ZIP does not contain Pustakalaya.exe"
+            }
+          } finally { $archive.Dispose() }
+
+          $manifest = Get-Content -LiteralPath (Join-Path $releaseDir "SHA256SUMS.txt")
+          foreach ($name in @("Pustakalaya.exe", "Pustakalaya-windows-portable.zip")) {
+            $hash = (Get-FileHash -LiteralPath (Join-Path $releaseDir $name) -Algorithm SHA256).Hash.ToLowerInvariant()
+            if (-not ($manifest -match "^$hash\s+$([regex]::Escape($name))$")) {
+              throw "Checksum manifest does not match $name"
+            }
+          }
+
+      - name: Smoke-test the packaged executable in a clean directory
+        shell: pwsh
+        run: |
+          $dataDir = Join-Path $env:RUNNER_TEMP "pustakalaya-clean-smoke"
+          New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
+          $env:PUSTAKALAYA_DATA_DIR = $dataDir
+          $env:HOST = "127.0.0.1"
+          $env:PORT = "5127"
+          $process = Start-Process -FilePath (Resolve-Path dist\release\Pustakalaya.exe) -PassThru -WindowStyle Hidden
+          try {
+            $ready = $false
+            1..60 | ForEach-Object {
+              if ($ready) { return }
+              try {
+                $response = Invoke-WebRequest -Uri "http://127.0.0.1:5127/auth/login" -UseBasicParsing -TimeoutSec 2
+                if ($response.StatusCode -eq 200) { $ready = $true }
+              } catch { Start-Sleep -Seconds 1 }
+            }
+            if (-not $ready) { throw "Packaged executable did not serve /auth/login" }
+            if (-not (Test-Path (Join-Path $dataDir "pustakalaya.db"))) { throw "Packaged executable did not initialize its database" }
+          } finally {
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+          }
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         env:

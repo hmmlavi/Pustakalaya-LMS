@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from app.domain.enums import LoanStatus, UserRole
+from app.domain.enums import UserRole
 from app.domain.exceptions import DomainError
 from app.domain.value_objects import ZERO_MONEY, local_today
 from app.web.auth_utils import get_current_user, login_required, roles_required

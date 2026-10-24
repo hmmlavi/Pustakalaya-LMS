@@ -17,7 +17,6 @@ from app.domain.enums import (
 from app.domain.exceptions import (
     BookNotFoundError,
     BranchNotFoundError,
-    EligibilityError,
     MemberNotFoundError,
     ReservationConflictError,
     ReservationNotFoundError,

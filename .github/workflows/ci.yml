@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install development dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Check dependency consistency
+        run: python -m pip check
+
+      - name: Verify a fresh database can be migrated
+        run: >-
+          python -c "import tempfile; from pathlib import Path; from sqlalchemy import create_engine, text; from app.infrastructure.database import apply_migrations; db = Path(tempfile.mkdtemp()) / 'ci.db'; url = f'sqlite:///{db.as_posix()}'; apply_migrations(url); engine = create_engine(url); assert engine.connect().execute(text('select count(*) from alembic_version')).scalar() == 1"
+
+      - name: Run test suite
+        run: python -m pytest -q
