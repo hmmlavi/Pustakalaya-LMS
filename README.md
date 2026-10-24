@@ -1,176 +1,297 @@
-# Pustakalaya (पुस्तकालय)
+# Pustakalaya
 
-> **Every Book, One Place.**  
-> A modular, offline-ready Library Management System built for the **Lucknow Public Library Network** (Hazratganj Central Library, Gomti Nagar Civic Branch, and Aliganj Neighbourhood Branch).
+**Pustakalaya (पुस्तकालय)** is an offline-ready library management system for cataloging books, managing physical copies across branches, handling memberships and circulation, processing reservations and fines, and maintaining an auditable operational record.
 
----
+It is designed for the Lucknow Public Library Network and runs locally with a Flask web interface backed by SQLite. A Windows executable and portable ZIP are available from the [v1.0.0 release](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0).
 
-## Download the Windows release
+Useful links: [screenshots](#screenshots) · [Windows quick start](#option-1-windows-packaged-application) · [source quick start](#option-2-run-from-source) · [testing](#testing-and-development) · [release assets](https://github.com/hmmlavi/Pustakalaya-LMS/releases)
 
-The latest stable Windows release is available on the [Pustakalaya-LMS v1.0.0 release page](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0):
+## Overview
 
-- [Pustakalaya.exe](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya.exe) — standalone Windows executable.
-- [Pustakalaya-windows-portable.zip](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya-windows-portable.zip) — portable package.
-- [SHA256SUMS.txt](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/SHA256SUMS.txt) — download checksums.
+Pustakalaya gives library staff one local workspace for:
 
-See [Quick Start — Windows](#quick-start--windows-powershell) below for first-run and data-storage instructions.
+- maintaining a searchable catalog and branch-level copy inventory;
+- registering members and applying BASIC, STANDARD, and PREMIUM borrowing policies;
+- issuing, returning, renewing, and reporting damaged or lost physical copies;
+- managing deterministic FIFO reservations and pickup deadlines;
+- assessing, paying, and waiving INR fines with an auditable ledger;
+- importing historical records with validation and quarantine reporting; and
+- reviewing operational reports and safe CSV exports.
 
-## Key Capabilities
+The application is intentionally local-first. SQLite is configured for reliable single-host operation with foreign-key enforcement, WAL mode, busy-timeout handling, and explicit write transactions. It is not a multi-node library service without moving the database layer to a client-server database.
 
-- **4-Layer Architecture & Rich Domain Model**: Clean separation across Domain (`app/domain`), Persistence/Repositories (`app/models`, `app/repositories`, `app/infrastructure`), Application Services (`app/services`), and Web Presentation (`app/web`).
-- **Catalog & Branch Inventory**: ISBN-10/ISBN-13 checksum validation, optional missing-ISBN support for heritage imprints, many-to-many author attribution, unique copy accession numbers, and validated copy-state transitions (`AVAILABLE`, `ON_LOAN`, `RESERVED`, `LOST`, `DAMAGED`, `WITHDRAWN`).
-- **Configurable Membership Tiers (Strategy + Factory)**: `BASIC`, `STANDARD`, and `PREMIUM` policies governing max simultaneous loans, loan/renewal durations, reservation limits, grace days, daily overdue rates, per-loan fine caps, and unpaid-fine blocking thresholds.
-- **Atomic Circulation & SQLite Concurrency Safety**: Issue, return, damaged/lost workflows, and policy-checked renewals protected by SQLite `WAL` mode, `BEGIN IMMEDIATE` write transactions, partial unique indexes, and conditional row updates—preventing concurrent double-checkout and rolling back all partial writes (including audit events) on failure.
-- **Deterministic FIFO Reservations**: Queue ordering by `(created_at, id)`, automatic hold allocation on return, pickup-deadline tracking, and idempotent expiration reallocation (`scripts/process_reservations.py`).
-- **Exact INR Fine Ledger**: `Decimal` arithmetic backed by integer paise storage (`MoneyPaise`), holiday- and grace-period-aware overdue calculations, partial and full payments, idempotency keys, and audited administrative waivers.
-- **Historical Data Quality & Quarantine Pipeline**: Imports 1 year of realistic synthetic history while rejecting or quarantining malformed ISBNs, ghost references, missing/inverted dates, overlapping loans, and unexplained fine discrepancies into an inspectable staging ledger.
-- **Premium Skeuomorphic Botanical & Moonlit Forest UI**: Tactile 5-level skeuomorphic depth system, physical hardcover bookplate placeholders, responsive button/input micro-interactions, and dual cool-toned themes—**Peaceful Botanical Light** (`#F2F6F1` / `#FFFFFF` / `#668875` / `#91B5B5`) and **Moonlit Forest Dark** (`#101A19` / `#172422` / `#8AB6A0` / `#A7C5D5` with cool celadon lanterns and pale bioluminescent fireflies)—paired with a zero-FOUC Horizon Toggle, independent **Library Ambience** controls (`Auto`, `Minimal`, `Off`), `prefers-reduced-motion` support, and 100% offline operation.
-- **Local Security & RBAC**: Werkzeug password hashing, Flask-WTF CSRF protection on all state-changing endpoints, session expiration, server-side role enforcement (`ADMIN`, `LIBRARIAN`, `STAFF_READONLY`), CSV formula-injection protection, and zero external CDN/API dependencies.
+## Screenshots
 
----
+These screenshots were captured from the running Pustakalaya application using synthetic demonstration data. They are not mockups.
 
-## Quick Start — Windows (PowerShell)
+<table>
+  <tr>
+    <td><img src="docs/screenshots/login.jpg" alt="Pustakalaya sign-in screen" width="480"><br><sub>Sign-in screen with the Moonlit Forest theme.</sub></td>
+    <td><img src="docs/screenshots/dashboard.jpg" alt="Pustakalaya operations dashboard" width="480"><br><sub>Operations dashboard with catalog, circulation, branch, and fine summaries.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/catalog.jpg" alt="Pustakalaya book catalog" width="480"><br><sub>Searchable catalog with category, language, branch, and availability filters.</sub></td>
+    <td><img src="docs/screenshots/book-details.jpg" alt="Pustakalaya book details and copies" width="480"><br><sub>Book metadata, branch availability, and physical-copy management.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/members.jpg" alt="Pustakalaya member directory" width="480"><br><sub>Member directory with tier and membership-status filters.</sub></td>
+    <td><img src="docs/screenshots/circulation.jpg" alt="Pustakalaya circulation desk" width="480"><br><sub>Issue and return workflows for physical copies.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/reservations.jpg" alt="Pustakalaya reservations" width="480"><br><sub>FIFO reservation queues and pickup-hold processing.</sub></td>
+    <td><img src="docs/screenshots/fines.jpg" alt="Pustakalaya fine ledger" width="480"><br><sub>Fine filtering, outstanding balances, and payment workflows.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/reports.jpg" alt="Pustakalaya reports" width="480"><br><sub>Operational reports and CSV export access.</sub></td>
+    <td><img src="docs/screenshots/settings.jpg" alt="Pustakalaya settings" width="480"><br><sub>Appearance, ambience, and staff-account settings.</sub></td>
+  </tr>
+</table>
+
+## Features
+
+### Catalog and inventory
+
+- ISBN-10 and ISBN-13 checksum validation, with optional ISBNs for eligible heritage records.
+- Duplicate-aware author and book handling.
+- Multiple physical copies per catalog work, unique accession numbers, owning branches, acquisition dates, and condition notes.
+- Validated copy states including `AVAILABLE`, `ON_LOAN`, `RESERVED`, `LOST`, `DAMAGED`, and `WITHDRAWN`.
+- Branch-level availability and catalog search by title, author, category, language, ISBN, and branch.
+
+### Members and circulation
+
+- Member registration, editing, status changes, expiry dates, contact details, home branches, and membership tiers.
+- Tier policies for loan limits, loan duration, renewals, reservation limits, grace periods, fine rates, caps, and borrowing blocks.
+- Atomic issue, return, renewal, damaged-copy, and lost-copy workflows.
+- Holiday-aware due dates and overdue calculations.
+- SQLite write locking and conditional updates to prevent double checkout of one physical copy.
+
+### Reservations and fines
+
+- Eligibility checks and duplicate prevention for reservations.
+- Deterministic FIFO queues with automatic allocation after returns.
+- Pickup deadlines, expired-hold processing, and idempotent reallocation.
+- Exact INR money handling using integer paise storage and `Decimal` calculations.
+- Partial and full payments, idempotency keys, administrative waivers, payment receipts, and audit history.
+
+### Administration and data quality
+
+- Role-based access control for `ADMIN`, `LIBRARIAN`, and `STAFF_READONLY` accounts.
+- First-run administrator setup and last-active-administrator protection.
+- Branch, tier, holiday, staff, audit, and correction workflows.
+- Historical import validation with accepted, rejected, quarantined, duplicate, and error dispositions.
+- Dataset verification for migrations, SQLite integrity, foreign keys, counts, and operational invariants.
+- Report pages for overdue items, active loans, inventory, member history, fines, reservations, and data quality.
+
+### Windows distribution
+
+- Standalone `Pustakalaya.exe` and portable ZIP distribution.
+- Bundled templates, CSS, JavaScript, migrations, and Alembic configuration.
+- Persistent runtime data outside the build directory, under `%LOCALAPPDATA%\\Pustakalaya` by default.
+- SHA-256 manifest for release downloads.
+
+## Technology and architecture
+
+- **Python 3.12 in CI**, with Flask 3, Flask-WTF, WTForms, Werkzeug, SQLAlchemy 2, Alembic, SQLite, `python-dotenv`, and `tzdata`.
+- **Web layer:** Flask blueprints, server-rendered Jinja templates, Flask-WTF CSRF protection, and local CSS/JavaScript assets.
+- **Application layer:** domain entities, policies, state machines, services, repositories, and explicit transaction boundaries.
+- **Persistence layer:** SQLAlchemy models and repositories over SQLite, with versioned Alembic migrations.
+- **Packaging:** PyInstaller spec and a Windows launcher that applies migrations, starts the local server, and opens the browser.
+
+```mermaid
+flowchart LR
+    Browser[Local browser] --> Web[Flask blueprints and templates]
+    Web --> Services[Application services]
+    Services --> Repositories[Repositories and Unit of Work]
+    Repositories --> Models[SQLAlchemy models]
+    Models --> SQLite[(SQLite database)]
+    Migrations[Alembic migrations] --> SQLite
+    Scripts[Operational scripts] --> Services
+    Launcher[Windows launcher] --> Web
+    Launcher --> Migrations
+```
+
+## Installation and quick start
+
+### Option 1: Windows packaged application
+
+Download the current assets from the [Pustakalaya v1.0.0 release](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0):
+
+1. Choose [`Pustakalaya.exe`](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya.exe) for the direct executable, or download [`Pustakalaya-windows-portable.zip`](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya-windows-portable.zip) and extract it.
+2. Run `Pustakalaya.exe`. The launcher starts the local server and opens the browser at the local sign-in page.
+3. On a new database, open `/auth/setup` in the local application and create the first administrator account.
+4. Verify downloads with [`SHA256SUMS.txt`](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/SHA256SUMS.txt) if required.
+
+The packaged application stores its database, logs, and generated runtime files in `%LOCALAPPDATA%\\Pustakalaya` by default. Set `PUSTAKALAYA_DATA_DIR` to another writable directory before launching if needed. The package is portable, not a system-wide installer, and does not require administrator privileges.
+
+Troubleshooting:
+
+- If the browser does not open, visit `http://127.0.0.1:5000` manually unless `PORT` was changed.
+- If the port is busy, set `PORT` to another local port before launching.
+- If first-run setup is unavailable, a staff account already exists; sign in or use an administrator account to manage staff.
+- Keep the runtime directory writable and do not delete the database while the application is running.
+
+### Option 2: Run from source
+
+Prerequisite: Python 3.12 or a compatible supported Python installation.
 
 ```powershell
-# 1. Create and activate an isolated virtual environment
+git clone https://github.com/hmmlavi/Pustakalaya-LMS.git
+cd Pustakalaya-LMS
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 2. Install runtime and test dependencies
-pip install -r requirements-dev.txt
-
-# 3. Create your local environment configuration
+.\\.venv\\Scripts\\Activate.ps1
+python -m pip install -r requirements-dev.txt
 Copy-Item .env.example .env
-# Edit .env to set a strong random SECRET_KEY if desired (ephemeral key is generated in dev if omitted)
+```
 
-# 4. Run Alembic database migrations and create your initial Administrator account
-python scripts\initialize_db.py --admin-username admin --prompt-admin-password
-# (Alternatively, run `alembic upgrade head`, start `python run.py`, and visit `/auth/setup` once;
-#  first-run setup locks automatically as soon as the first staff account exists.)
+Edit `.env` and set a strong `SECRET_KEY` for any persistent or production-like deployment. Then initialize the database and create the first administrator:
 
-# 5. Seed the deterministic Lucknow 3-branch dataset (2,000 books, 4,200 copies, 500 members)
-python scripts\seed_data.py
-
-# 6. Import the 1-year historical dataset (validates, accepts valid rows, quarantines malformed rows)
-python scripts\import_history.py
-
-# 7. Process any expired reservation pickup holds & verify all dataset counts and relational invariants
-python scripts\process_reservations.py
-python scripts\verify_data.py
-
-# 8. Run the automated test suite (57 tests on isolated temporary databases)
-pytest -v
-
-# 9. Launch the web application (http://127.0.0.1:5000)
+```powershell
+python scripts\\initialize_db.py --admin-username admin --prompt-admin-password
 python run.py
 ```
 
----
+Open `http://127.0.0.1:5000`. Alternatively, apply migrations and complete first-run setup from the browser:
 
-## Quick Start — Linux / macOS
-
-```bash
-# 1. Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 2. Install dependencies
-pip install -r requirements-dev.txt
-
-# 3. Copy environment template
-cp .env.example .env
-
-# 4. Apply Alembic migrations & bootstrap initial administrator
-python scripts/initialize_db.py --admin-username admin --prompt-admin-password
-
-# 5. Seed deterministic 3-branch dataset & generate historical fixture
-python scripts/seed_data.py
-
-# 6. Run idempotent historical import & verify database health
-python scripts/import_history.py
-python scripts/verify_data.py
-
-# 7. Run automated test suite
-pytest -v
-
-# 8. Start Pustakalaya web server
+```powershell
+alembic upgrade head
 python run.py
 ```
 
----
+Optional deterministic demonstration data and historical import:
 
-## Operational CLI Commands
+```powershell
+python scripts\\seed_data.py
+python scripts\\import_history.py
+python scripts\\process_reservations.py
+python scripts\\verify_data.py
+```
 
-| Command | Purpose |
-| :--- | :--- |
-| `alembic upgrade head` | Apply versioned schema migrations directly via Alembic |
-| `python scripts/initialize_db.py --prompt-admin-password` | Apply migrations and interactively bootstrap an `ADMIN` account |
-| `python scripts/seed_data.py` | Idempotently seed branches, tiers, holidays, 2,000 books, 4,200 copies, 500 members, and export `instance/historical_source_records.json` |
-| `python scripts/import_history.py` | Validate and import historical records idempotently with structured quarantine reporting |
-| `python scripts/process_reservations.py` | Expire unclaimed `READY_FOR_PICKUP` holds past their deadline and reallocate copies to next FIFO waiters |
-| `python scripts/verify_data.py` | Assert all dataset counts, FK integrity, copy/loan/reservation/fine invariants (`exit 0` on pass) |
+The source workflow uses the same commands on Linux and macOS with the usual `python3`, virtual-environment activation, and path syntax for those systems.
 
----
+## Configuration
 
-## Project Structure & Documentation
+Configuration is loaded from environment variables and an optional root `.env` file. Explicit environment variables take precedence over `.env` values.
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `FLASK_ENV` | `development`, `production`, or another deployment label | `development` |
+| `SECRET_KEY` | Flask session signing key | Ephemeral key in development; required in production |
+| `DATABASE_URL` | SQLAlchemy database URL | SQLite database in the runtime data directory |
+| `PUSTAKALAYA_DATA_DIR` | Writable runtime-data directory for databases and logs | `%LOCALAPPDATA%\\Pustakalaya` in the package; `instance/` from source |
+| `LIBRARY_TIMEZONE` | Operational library timezone | `Asia/Kolkata` |
+| `SESSION_LIFETIME_MINUTES` | Permanent session lifetime | `480` minutes, minimum `15` |
+| `PICKUP_HOLD_DAYS` | Pickup deadline duration | `3` days |
+| `SEED_RANDOM_SEED` | Deterministic seed-data random seed | `20261024` |
+| `HISTORICAL_REFERENCE_DATE` | Reference date for generated historical data | `2026-10-24` |
+| `HISTORICAL_DAYS` | Historical window length | `365` |
+| `HOST` / `PORT` | Local server bind host and port | `127.0.0.1` / `5000` |
+
+For scripted bootstrap only, `PUSTAKALAYA_ADMIN_USERNAME`, `PUSTAKALAYA_ADMIN_PASSWORD`, and `PUSTAKALAYA_ADMIN_FULL_NAME` may be supplied to `scripts/initialize_db.py`. Do not commit those values or place production credentials in `.env.example`.
+
+Development may generate an ephemeral secret when `SECRET_KEY` is absent. Production requires an explicitly configured persistent secret, HTTPS/TLS, and appropriate reverse-proxy controls.
+
+## Usage guide
+
+1. **First-run setup:** apply migrations, then create the first administrator at `/auth/setup` or with `initialize_db.py`.
+2. **Catalog:** open **Books**, search or add a catalog work, manage authors, and add physical copies assigned to branches.
+3. **Members:** register a member, choose a tier and home branch, and update membership status or expiry when needed.
+4. **Circulation:** use **Circulation** to issue a copy, return it, renew an active loan, or report a damaged/lost copy.
+5. **Reservations:** place a reservation when eligible copies are unavailable; process expired pickup holds from **Reservations** or the scheduled script.
+6. **Fines:** review the fine ledger, record partial or full payments, and apply administrative waivers when authorized.
+7. **Reports:** select a report type and branch filter, then use the overdue CSV export where appropriate.
+8. **Administration and settings:** manage roles, branches, tiers, holidays, audit records, corrections, appearance, and ambience preferences according to the signed-in role.
+
+## Project structure
 
 ```text
 Pustakalaya-LMS/
 ├── app/
-│   ├── config.py                # Environment configuration & cross-platform SQLite path resolution
-│   ├── domain/                  # Pure domain entities, enums, ISBN/Money value objects, state machines, policies
-│   ├── infrastructure/          # SQLite WAL/FK engine setup, BEGIN IMMEDIATE UnitOfWork, logging, seed generator
-│   ├── models/                  # SQLAlchemy 2.0 ORM mappings (16 tables, MoneyPaise, UTCDateTime, partial indexes)
-│   ├── repositories/            # 9 repository modules encapsulating persistence queries & pagination
-│   ├── services/                # 9 application services orchestrating transactional use cases & audit logging
-│   └── web/                     # 12 Flask blueprints (11 UI sections), CSRF forms, RBAC decorators, templates, CSS/JS
-├── migrations/                  # Versioned Alembic schema migrations
-├── scripts/                     # CLI setup, seed, historical import, reservation processor, and verification tools
-├── tests/                       # 57 pytest unit, integration, concurrency, rollback, import, DOM, theme, and web/RBAC tests
-├── docs/
-│   ├── architecture.md          # 4-layer architecture & SQLite transaction/concurrency model
-│   ├── class-diagram.mmd        # Mermaid OOP class diagram (entities, policies, repositories, services)
-│   ├── er-diagram.mmd           # Mermaid relational ER diagram (all 16 tables & constraints)
-│   ├── design-decisions.md      # Repository, Strategy, Factory, Unit of Work, & MoneyPaise rationale
-│   ├── business-rules.md        # Tier rules, state transitions, FIFO holds, holiday-aware fines, RBAC matrix
-│   ├── data-quality.md          # Synthetic dataset metrics & historical quarantine issue-code reference
-│   └── testing.md               # Test suite coverage & execution guide
-├── instance/                    # Git-ignored runtime SQLite DB, logs, and generated historical fixture
-└── run.py                       # Local WSGI/Flask server entrypoint
+│   ├── domain/           # Entities, value objects, policies, enums, and state machines
+│   ├── infrastructure/  # Database, transactions, logging, and deterministic seed data
+│   ├── models/           # SQLAlchemy ORM mappings
+│   ├── repositories/     # Persistence queries and pagination
+│   ├── services/         # Authentication, catalog, circulation, fines, imports, and reports
+│   └── web/              # Blueprints, forms, templates, CSS, and JavaScript
+├── migrations/           # Alembic schema history
+├── packaging/            # PyInstaller spec and Windows launcher
+├── scripts/              # Initialization, seed, import, reservation, and verification commands
+├── tests/                # Unit, integration, concurrency, import, DOM, theme, and RBAC tests
+├── docs/                 # Architecture, business rules, data quality, testing, and screenshots
+├── .github/workflows/    # CI and tagged Windows release workflows
+└── run.py                # Source entry point
 ```
 
-## Continuous integration
+## Testing and development
 
-The [`CI` workflow](.github/workflows/ci.yml) runs on pushes to `main` and on pull requests targeting `main`.
-It installs the documented development dependencies, checks dependency consistency, verifies a fresh Alembic
-database migration, and runs the complete pytest suite. Windows packaging and release publication remain isolated
-to the tagged-release workflow.
+Install the development dependencies, then run:
 
----
+```powershell
+python -m pytest -q
+python scripts\\verify_data.py --json
+```
 
-## Known Limitations & Local Deployment Notes
+`verify_data.py` expects a migrated and populated operational database when checking dataset counts. The test suite uses isolated temporary databases. The current suite contains 57 tests.
 
-## Windows release
+The [CI workflow](.github/workflows/ci.yml) runs on pushes to `main` and pull requests targeting `main`. It checks dependency consistency, verifies a fresh migration, and runs the full test suite.
 
-Tagged releases are built by [`.github/workflows/release-windows.yml`](.github/workflows/release-windows.yml)
-on a Windows runner after the test suite passes. Each release contains a portable ZIP,
-the standalone launcher executable, and `SHA256SUMS.txt`.
-
-To build the same artifacts locally on Windows:
+To build Windows artifacts locally:
 
 ```powershell
 python -m pip install -r requirements-dev.txt pyinstaller==6.16.0
-.\scripts\build_windows.ps1
+.\\scripts\\build_windows.ps1
 ```
 
-The launcher starts the local server on `127.0.0.1`, waits until it responds, and then
-opens the browser. Installed data is stored in `%LOCALAPPDATA%\Pustakalaya` by default;
-set `PUSTAKALAYA_DATA_DIR` to choose another writable location. The first run still
-requires administrator setup, either in the browser at `/auth/setup` or with
-`scripts\initialize_db.py`. The executable is a portable deployment, not a system-wide
-installer, so it does not require administrator privileges.
+The [Windows release workflow](.github/workflows/release-windows.yml) runs for tags matching `v*.*.*`. It tests the project, builds the executable and portable ZIP, checks exact artifact names and checksums, launches the package in a clean data directory, and publishes the three release assets.
 
-- **Single-Host SQLite Scope**: SQLite `WAL` + `BEGIN IMMEDIATE` (`busy_timeout = 15000 ms`) safely serializes concurrent branch desk requests on a single host, but is not intended for multi-node shared-network-filesystem deployments without migrating `DATABASE_URL` to a client-server RDBMS.
-- **Local HTTP vs. Production HTTPS**: In `FLASK_ENV=development` (`http://127.0.0.1:5000`), `SESSION_COOKIE_SECURE` defaults to `False` so browser sessions work over local loopback HTTP. Setting `FLASK_ENV=production` requires a persistent `SECRET_KEY` and enables `SESSION_COOKIE_SECURE=True` (serve behind TLS/HTTPS).
-- **Scheduled Hold Expiration**: Unclaimed `READY_FOR_PICKUP` holds are expired via **Reservations → Process Expired Pickup Holds** or `python scripts/process_reservations.py` (schedule via Windows Task Scheduler or cron for unattended background sweeps).
-- **No Built-In Login Rate Limiter**: Authentication uses salted `scrypt`/`pbkdf2` Werkzeug password hashes; internet-facing deployments should enforce upstream reverse-proxy rate limiting and TLS.
+## Security and data management
+
+- Passwords are stored using Werkzeug password hashing; raw passwords are not stored in the database.
+- Flask-WTF protects applicable state-changing forms with CSRF tokens.
+- Authentication reloads the active user on each request and clears sessions for inactive or missing accounts.
+- Role checks are enforced server-side for administrative, circulation, member, reservation, fine, and settings actions.
+- CSV exports protect against spreadsheet formula injection.
+- The default bind address is loopback (`127.0.0.1`). Do not expose the development server directly to the internet.
+- For production-like deployments, use a persistent `SECRET_KEY`, TLS/HTTPS, reverse-proxy rate limiting, and a supported database deployment strategy.
+
+Back up the SQLite database with SQLite-aware tooling while the application is stopped or after a consistent checkpoint. Store backups outside the runtime directory, protect them as sensitive operational data, and test restoration before relying on them.
+
+## Troubleshooting
+
+### The application does not start
+
+Confirm the virtual environment is active and install `requirements-dev.txt`. Check the server log under the configured data directory. In production mode, set a non-placeholder `SECRET_KEY`.
+
+### The port is already in use
+
+Choose another local port:
+
+```powershell
+$env:PORT = "5050"
+python run.py
+```
+
+The same environment variable can be set before launching the packaged executable.
+
+### Database initialization or migration fails
+
+Check that the configured data directory is writable, that `DATABASE_URL` is valid, and that the database is not being used by another process. Back up existing data before attempting recovery. Apply migrations with `alembic upgrade head` or `scripts/initialize_db.py`.
+
+### First-run setup is locked
+
+Setup is intentionally available only while no staff account exists. Sign in with an existing administrator or use the staff-management workflow instead of trying to recreate the initial account.
+
+### Packaged assets are missing
+
+Use the official portable ZIP or executable from the release page. When building locally, run `scripts/build_windows.ps1` from the repository root and verify that `dist/release/` contains the exact expected artifact set.
+
+## Releases and project status
+
+The current published release is [v1.0.0](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0), containing the executable, portable ZIP, and SHA-256 manifest. The repository's release workflow publishes future version tags after tests and Windows artifact checks pass.
+
+No formal future roadmap is currently maintained in the repository. The implemented behavior is documented above and in [`docs/`](docs/).
+
+## Contributing and license
+
+The repository currently has no formal contribution guide or issue-template process. Changes should preserve the documented business rules, add or update tests for behavior changes, and keep generated databases, logs, secrets, and build outputs out of commits.
+
+No `LICENSE` file is currently present. The project license has not yet been specified; do not assume permission to redistribute or modify it beyond the rights that apply to your use of the repository.
