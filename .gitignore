@@ -1,0 +1,39 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
+# Local environment & secrets
+.env
+.env.local
+
+# Instance databases, staging fixtures, and runtime logs
+instance/*.db
+instance/*.db-shm
+instance/*.db-wal
+instance/*.sqlite
+instance/*.sqlite3
+instance/*.json
+instance/*.log
+logs/
+*.log
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

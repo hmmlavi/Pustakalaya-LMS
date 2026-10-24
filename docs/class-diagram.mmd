@@ -1,0 +1,301 @@
+classDiagram
+    direction TB
+
+    %% Domain Entities
+    class LibraryBranch {
+        +int id
+        +str code
+        +str name
+        +str city
+        +str pincode
+        +bool is_active
+    }
+
+    class Author {
+        +int id
+        +str full_name
+        +str normalized_name
+        +int birth_year
+        +compute_normalized_name(name) str
+    }
+
+    class Book {
+        +int id
+        +str title
+        +str isbn
+        +str publisher
+        +int publication_year
+        +str category
+        +str language
+        +set_validated_isbn(raw_isbn) void
+    }
+
+    class BookCopy {
+        +int id
+        +int book_id
+        +int owning_branch_id
+        +str accession_number
+        +str status
+        +date acquisition_date
+        +assert_can_issue() void
+        +transition_to(new_status, manual, admin_override, note) void
+    }
+
+    class MembershipTier {
+        +int id
+        +str code
+        +int max_active_loans
+        +int loan_duration_days
+        +int max_renewals
+        +int renewal_duration_days
+        +int grace_period_days
+        +Decimal daily_fine_rate
+        +Decimal max_fine_per_loan
+        +Decimal fine_blocking_threshold
+        +bool borrowing_enabled
+    }
+
+    class Member {
+        +int id
+        +str member_code
+        +str full_name
+        +str email
+        +str status
+        +date registration_date
+        +date expiry_date
+        +is_expired(as_of_date) bool
+    }
+
+    class User {
+        +int id
+        +str username
+        +str role
+        +bool is_active
+        +set_password(raw_password) void
+        +verify_password(raw_password) bool
+        +has_role(allowed_roles) bool
+    }
+
+    class Loan {
+        +int id
+        +str loan_number
+        +datetime checked_out_at
+        +date due_date
+        +datetime returned_at
+        +str status
+        +int renewal_count
+        +is_overdue(as_of_date) bool
+        +mark_returned(returned_at, returned_branch_id, notes) void
+        +mark_lost(recorded_at, notes) void
+    }
+
+    class Reservation {
+        +int id
+        +str reservation_number
+        +str status
+        +datetime created_at
+        +datetime pickup_deadline_at
+        +allocate_copy(copy_id, allocated_at, pickup_deadline_at) void
+        +mark_fulfilled(fulfilled_at) void
+        +cancel(cancelled_at, note) void
+        +expire(expired_at) void
+    }
+
+    class Fine {
+        +int id
+        +str fine_number
+        +Decimal assessed_amount
+        +Decimal paid_amount
+        +Decimal waived_amount
+        +str status
+        +outstanding_balance Decimal
+        +apply_payment(amount) void
+        +waive_remaining() Decimal
+    }
+
+    class FinePayment {
+        +int id
+        +str receipt_number
+        +Decimal amount
+        +str payment_method
+        +str idempotency_key
+        +datetime paid_at
+    }
+
+    class AuditEvent {
+        +int id
+        +str event_type
+        +str entity_type
+        +str entity_id
+        +str summary
+        +datetime created_at
+    }
+
+    %% Domain Policies (Strategy + Factory) & State Machines
+    class BorrowingPolicyStrategy {
+        <<interface>>
+        +evaluate_eligibility(...) EligibilityReport
+        +assert_can_issue(...) void
+        +assert_can_renew(...) void
+        +assert_can_reserve(...) void
+        +calculate_initial_due_date(checkout_date, calendar, branch_id) date
+        +calculate_renewal_due_date(current_due_date, calendar, branch_id) date
+    }
+
+    class TierBorrowingPolicy {
+        +TierPolicyConfig config
+    }
+
+    class FineCalculationStrategy {
+        <<interface>>
+        +calculate_fine(due_date, effective_return_date, checkout_date, branch_id) FineBreakdown
+    }
+
+    class HolidayAwareFinePolicy {
+        +TierPolicyConfig config
+        +HolidayCalendar calendar
+    }
+
+    class PolicyFactory {
+        +create_borrowing_policy(tier) TierBorrowingPolicy
+        +create_fine_policy(tier, calendar) HolidayAwareFinePolicy
+    }
+
+    class CopyStateMachine {
+        +validate_transition(current, target, manual, admin_override) void
+    }
+
+    class ReservationStateMachine {
+        +validate_transition(current, target) void
+    }
+
+    %% Infrastructure & Repositories
+    class UnitOfWork {
+        +bool write
+        +commit() void
+        +rollback() void
+    }
+
+    class BookRepository {
+        +get_by_isbn(isbn) Book
+        +find_exact_non_isbn_match(title, publisher, year, edition) Book
+    }
+
+    class LoanRepository {
+        +get_active_loan_for_copy(copy_id) Loan
+        +conditional_apply_renewal(loan_id, expected_count, max_renewals, new_due) bool
+    }
+
+    class CopyRepository {
+        +conditional_transition_status(copy_id, expected_statuses, new_status) bool
+    }
+
+    class ReservationRepository {
+        +list_waiting_fifo(book_id, branch_id) list~Reservation~
+        +get_ready_for_copy(copy_id) Reservation
+    }
+
+    class FineRepository {
+        +get_member_outstanding_balance(member_id) Decimal
+        +get_payment_by_idempotency_key(key) FinePayment
+    }
+
+    class ImportBatchRepository {
+        +list_batches(limit) list~ImportBatch~
+        +search_issues(batch_id, disposition, record_type, issue_code) Page
+    }
+
+    %% Services (9 Application Services)
+    class BookService {
+        +create_book(...) Book
+        +update_book(...) Book
+        +add_copy(...) BookCopy
+        +change_copy_status(copy_id, new_status, note) BookCopy
+    }
+
+    class MemberService {
+        +register_member(...) Member
+        +update_member(...) Member
+        +change_member_status(...) Member
+    }
+
+    class CirculationService {
+        +issue_copy(...) Loan
+        +return_copy(...) ReturnResult
+        +renew_loan(...) Loan
+        +report_loan_copy_lost(...) tuple~Loan, Fine~
+    }
+
+    class ReservationService {
+        +create_reservation(...) Reservation
+        +cancel_reservation(...) Reservation
+        +process_expired_reservations(...) list~Reservation~
+        +allocate_copy_to_next_waiting_in_session(...) Reservation
+    }
+
+    class FineService {
+        +calculate_loan_fine_in_session(...) FineBreakdown
+        +assess_overdue_fine_in_session(...) Fine
+        +record_payment(...) FinePayment
+        +waive_fine(...) Fine
+    }
+
+    class AuthenticationService {
+        +authenticate(username, password) User
+        +create_first_run_admin(...) User
+        +create_staff_user(...) User
+    }
+
+    class AdministrationService {
+        +create_branch(...) LibraryBranch
+        +update_branch(...) LibraryBranch
+        +update_tier_policy(...) MembershipTier
+        +admin_reinstate_withdrawn_copy(...) BookCopy
+        +admin_adjust_loan_due_date(...) Loan
+    }
+
+    class ReportingService {
+        +get_dashboard_summary() dict
+        +get_overdue_report(...) list
+        +get_data_quality_summary(batch_id) dict
+    }
+
+    class DataImportService {
+        +import_from_file(file_path, actor_user_id) ImportValidationReport
+        +import_records(records, source_filename, actor_user_id) ImportValidationReport
+    }
+
+    %% Relationships
+    Book "many" -- "many" Author : book_authors
+    Book "1" *-- "many" BookCopy : has copies
+    LibraryBranch "1" -- "many" BookCopy : owns
+    MembershipTier "1" -- "many" Member : governs
+    Member "1" -- "many" Loan : borrows
+    BookCopy "1" -- "many" Loan : lent via
+    Member "1" -- "many" Reservation : requests
+    Book "1" -- "many" Reservation : queued on
+    Loan "1" -- "0..1" Fine : assessed
+    Fine "1" *-- "many" FinePayment : settled by
+    User "1" -- "many" AuditEvent : records
+
+    BookCopy ..> CopyStateMachine : enforces
+    Reservation ..> ReservationStateMachine : enforces
+    BorrowingPolicyStrategy <|.. TierBorrowingPolicy
+    FineCalculationStrategy <|.. HolidayAwareFinePolicy
+    PolicyFactory ..> TierBorrowingPolicy : creates
+    PolicyFactory ..> HolidayAwareFinePolicy : creates
+
+    BookService --> BookRepository
+    BookService --> CopyRepository
+    BookService --> ReservationService : allocates waiting holds
+    CirculationService --> UnitOfWork : atomic BEGIN IMMEDIATE
+    CirculationService --> LoanRepository
+    CirculationService --> CopyRepository
+    CirculationService --> FineService
+    CirculationService --> ReservationService
+    CirculationService --> PolicyFactory
+    ReservationService --> ReservationRepository
+    FineService --> FineRepository
+    FineService --> PolicyFactory
+    DataImportService --> ImportBatchRepository
+    ReportingService --> ImportBatchRepository

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Administration | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Library Network Administration</h1>
+    <p class="page-subtitle">Govern staff RBAC accounts, Lucknow branches, membership tier rules, holidays, audit logs, and audited corrections.</p>
+  </div>
+</div>
+
+<nav class="tab-strip" aria-label="Administration Sections">
+  <a class="tab-pill active" href="{{ url_for('admin.index') }}">Overview</a>
+  <a class="tab-pill" href="{{ url_for('admin.users') }}">Staff Accounts ({{ users|length }})</a>
+  <a class="tab-pill" href="{{ url_for('admin.branches') }}">Branches ({{ branches|length }})</a>
+  <a class="tab-pill" href="{{ url_for('admin.tiers') }}">Tier Policies ({{ tiers|length }})</a>
+  <a class="tab-pill" href="{{ url_for('admin.holidays') }}">Holidays ({{ holidays|length }})</a>
+  <a class="tab-pill" href="{{ url_for('admin.corrections') }}">Audited Corrections</a>
+  <a class="tab-pill" href="{{ url_for('admin.audit') }}">Audit Log</a>
+</nav>
+
+<div class="stats-grid">
+  <div class="stat-card highlight-brand">
+    <div class="stat-label">Staff Accounts</div>
+    <div class="stat-value">{{ users|length }}</div>
+    <div class="stat-note"><a href="{{ url_for('admin.users') }}">Manage roles &amp; passwords &rarr;</a></div>
+  </div>
+  <div class="stat-card highlight-brand">
+    <div class="stat-label">Library Branches</div>
+    <div class="stat-value">{{ branches|length }}</div>
+    <div class="stat-note"><a href="{{ url_for('admin.branches') }}">Manage Lucknow branches &rarr;</a></div>
+  </div>
+  <div class="stat-card highlight-brand">
+    <div class="stat-label">Membership Tiers</div>
+    <div class="stat-value">{{ tiers|length }}</div>
+    <div class="stat-note"><a href="{{ url_for('admin.tiers') }}">Configure borrowing policies &rarr;</a></div>
+  </div>
+  <div class="stat-card highlight-warning">
+    <div class="stat-label">Holiday Calendar</div>
+    <div class="stat-value">{{ holidays|length }}</div>
+    <div class="stat-note"><a href="{{ url_for('admin.holidays') }}">Manage closed dates &rarr;</a></div>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Recent Append-Only Audit Events</h2>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.audit') }}">Full Audit Log</a>
+  </div>
+  <div class="table-wrap">
+    {% if recent_audit.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Event Type</th>
+          <th>Entity</th>
+          <th>Actor</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in recent_audit.items %}
+        <tr>
+          <td>{{ ev.created_at|ist_dt }}</td>
+          <td class="mono"><strong>{{ ev.event_type }}</strong></td>
+          <td class="mono">{{ ev.entity_type }}:{{ ev.entity_id }}</td>
+          <td>{{ ev.actor_user.username if ev.actor_user else 'system' }}</td>
+          <td>{{ ev.summary }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No audit events recorded yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

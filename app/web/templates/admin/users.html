@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Staff Accounts | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Staff Accounts</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Staff Accounts &amp; Role-Based Access</h1>
+    <p class="page-subtitle">Provision ADMIN, LIBRARIAN, and STAFF_READONLY accounts with Werkzeug password hashing.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Create Staff Account</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.users') }}">
+      {{ create_form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.username.id }}">Username *</label>
+          {{ create_form.username(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.full_name.id }}">Full Name *</label>
+          {{ create_form.full_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.email.id }}">Email</label>
+          {{ create_form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.role.id }}">Role *</label>
+          {{ create_form.role(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.branch_id.id }}">Assigned Branch</label>
+          {{ create_form.branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.password.id }}">Initial Password (min 8 chars) *</label>
+          {{ create_form.password(class="form-control", autocomplete="new-password") }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">+ Create Staff Account</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Existing Staff Accounts ({{ users|length }})</h2></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Name</th>
+          <th>Current Role</th>
+          <th>Status</th>
+          <th>Update Role / Branch / Reset Password</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="mono"><strong>{{ u.username }}</strong></td>
+          <td>{{ u.full_name }}<div class="text-muted" style="font-size:0.78rem;">{{ u.email or '' }}</div></td>
+          <td>{{ status_badge(u.role) }}</td>
+          <td>{{ status_badge('ACTIVE' if u.is_active else 'SUSPENDED') }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.update_user', user_id=u.id) }}" class="inline-actions">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="role" aria-label="Role for {{ u.username }}" style="width:auto; padding:0.28rem 0.5rem; font-size:0.8rem;">
+                {% for opt in update_form.role.choices %}
+                  <option value="{{ opt.value }}" {% if u.role == opt.value %}selected{% endif %}>{{ opt.value }}</option>
+                {% endfor %}
+              </select>
+              <select name="branch_id" aria-label="Branch for {{ u.username }}" style="width:auto; padding:0.28rem 0.5rem; font-size:0.8rem;">
+                {% for opt in update_form.branch_id.choices %}
+                  <option value="{{ opt.value }}" {% if (u.branch_id or 0) == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+              </select>
+              <label style="font-size:0.8rem; display:inline-flex; align-items:center; gap:0.25rem;">
+                <input type="checkbox" name="is_active" value="y" {% if u.is_active %}checked{% endif %}> Active
+              </label>
+              <input type="password" name="new_password" placeholder="New password (optional)" aria-label="Reset password" style="width:155px; padding:0.28rem 0.5rem; font-size:0.8rem;">
+              <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

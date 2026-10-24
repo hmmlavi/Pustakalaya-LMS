@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, book_cover_placeholder, render_pagination %}
+{% block title %}Book Catalog | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">Bibliographic Collection</span>
+    <h1 class="page-title">Book Catalog</h1>
+    <p class="page-subtitle">Search titles, authors, categories, and ISBNs with live branch copy availability across Lucknow.</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-secondary" href="{{ url_for('books.authors') }}">Manage Authors</a>
+    {% if current_user.is_admin %}
+      <a class="btn btn-primary" href="{{ url_for('books.create_book') }}">+ Add Catalog Book</a>
+    {% endif %}
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('books.list_books') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 260px;">
+    <label class="form-label" for="q">Title, Author, or ISBN</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="e.g. Premchand, 97881..., Awadh">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="language">Language</label>
+    <select id="language" name="language">
+      <option value="">All Languages</option>
+      {% for lang in languages %}
+        <option value="{{ lang }}" {% if selected_language == lang %}selected{% endif %}>{{ lang }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Branch Holding</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="checkbox-row" style="margin-bottom:0.35rem;">
+    <input id="available_only" name="available_only" type="checkbox" value="1" {% if available_only %}checked{% endif %}>
+    <label for="available_only">Available now</label>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a class="btn btn-secondary" href="{{ url_for('books.list_books') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Catalog Holdings ({{ "{:,}".format(results.total) }})</h2>
+  </div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Volume &amp; Edition</th>
+          <th>Authors</th>
+          <th>ISBN</th>
+          <th>Category / Language</th>
+          <th>Branches Holding</th>
+          <th>Availability</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in results.items %}
+        {% set ns = namespace(avail=0, on_loan=0, reserved=0, total=0, branches=[]) %}
+        {% for c in book.copies if c.status != 'WITHDRAWN' %}
+          {% set ns.total = ns.total + 1 %}
+          {% if c.status == 'AVAILABLE' %}{% set ns.avail = ns.avail + 1 %}
+          {% elif c.status == 'ON_LOAN' %}{% set ns.on_loan = ns.on_loan + 1 %}
+          {% elif c.status == 'RESERVED' %}{% set ns.reserved = ns.reserved + 1 %}
+          {% endif %}
+          {% if c.owning_branch.code not in ns.branches %}
+            {% set _ = ns.branches.append(c.owning_branch.code) %}
+          {% endif %}
+        {% endfor %}
+        <tr>
+          <td class="mono">#{{ book.id }}</td>
+          <td>
+            <div class="book-title-cell">
+              {{ book_cover_placeholder(book, 'mini') }}
+              <div>
+                <a class="book-title-link" href="{{ url_for('books.detail', book_id=book.id) }}">{{ book.title }}</a>
+                <div class="text-muted" style="font-size:0.8rem;">
+                  {{ book.publisher }} ({{ book.publication_year }}){% if book.edition %} · {{ book.edition }}{% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>{{ book.author_names }}</td>
+          <td class="mono">{{ book.isbn or '— Heritage / No ISBN —' }}</td>
+          <td>
+            <span class="catalog-chip">{{ book.category }}</span>
+            <div class="text-muted" style="font-size:0.79rem; margin-top:0.2rem;">{{ book.language }}</div>
+          </td>
+          <td class="mono">{{ ns.branches|join(', ') if ns.branches else 'None' }}</td>
+          <td>
+            {% if ns.avail > 0 %}
+              <span class="badge badge-success"><span class="badge-glyph" aria-hidden="true">&#9679;</span>{{ ns.avail }} / {{ ns.total }} available</span>
+            {% elif ns.reserved > 0 %}
+              <span class="badge badge-info"><span class="badge-glyph" aria-hidden="true">&#9733;</span>Reserved ({{ ns.reserved }} / {{ ns.total }})</span>
+            {% elif ns.on_loan > 0 %}
+              <span class="badge badge-warning"><span class="badge-glyph" aria-hidden="true">&#9670;</span>Borrowed ({{ ns.on_loan }} / {{ ns.total }})</span>
+            {% else %}
+              <span class="badge badge-neutral"><span class="badge-glyph" aria-hidden="true">&#9675;</span>0 / {{ ns.total }} available</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="inline-actions">
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('books.detail', book_id=book.id) }}">Details</a>
+              {% if ns.avail == 0 and ns.total > 0 and current_user.can_circulate %}
+                <a class="btn btn-accent btn-sm" href="{{ url_for('reservations.list_reservations', book_id=book.id) }}">Reserve</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Books Match This Search</h3>
+      <p>Try broadening your title, author, or ISBN query, or clear active category and branch filters.</p>
+      <div class="mt-1">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('books.list_books') }}">Reset Search Filters</a>
+        {% if current_user.is_admin %}
+          <a class="btn btn-primary btn-sm" href="{{ url_for('books.create_book') }}">+ Add Catalog Book</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'books.list_books') }}
+</section>
+{% endblock %}

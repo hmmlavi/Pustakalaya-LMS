@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, book_cover_placeholder %}
+{% block title %}Dashboard | {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="welcome-sanctuary" aria-label="Library Sanctuary Welcome">
+  <div>
+    <div class="welcome-meta-row">
+      <span class="welcome-emblem" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 5h7a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H2V5z"/>
+          <path d="M22 5h-7a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H22V5z"/>
+        </svg>
+      </span>
+      <span>Network Operations Dashboard</span>
+      <span aria-hidden="true">·</span>
+      <span>{{ today_formatted }}</span>
+    </div>
+    <h1 class="welcome-heading">Your library, ready for another chapter.</h1>
+    <p class="welcome-copy">
+      Welcome, <strong>{{ current_user.full_name }}</strong>. Manage catalog holdings, reader memberships, circulation desks, FIFO holds, and fine settlements across Lucknow's three public branches.
+    </p>
+    <div class="header-actions">
+      <a class="btn btn-primary" href="{{ url_for('books.list_books') }}">Explore Book Catalog</a>
+      {% if current_user.can_circulate %}
+        <a class="btn btn-accent" href="{{ url_for('circulation.index') }}">Open Circulation Desk</a>
+      {% endif %}
+      <a class="btn btn-secondary" href="{{ url_for('reports.index', type='overdue') }}">Branch Overdue Report</a>
+    </div>
+  </div>
+
+  <figure class="reading-room-quote">
+    <div class="reading-room-kicker">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <span>From the Reading Room</span>
+    </div>
+    <blockquote>“{{ daily_quote.text }}”</blockquote>
+    <figcaption>— <strong>{{ daily_quote.attribution }}</strong>, <em>{{ daily_quote.source }}</em></figcaption>
+  </figure>
+</section>
+
+<section aria-label="Key Library Statistics" class="stats-grid">
+  <div class="stat-card highlight-brand">
+    <div class="stat-card-top">
+      <div class="stat-label">Catalog Titles</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M2 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H2V4z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5H22V4z"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_titles) }}</div>
+    <div class="stat-note">Distinct catalog works</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div class="stat-label">Total Physical Copies</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><rect x="4" y="3" width="5" height="18" rx="1"/><rect x="10" y="5" width="5" height="16" rx="1"/><path d="M16 4l4 1-2 16-4-1 2-16z"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_copies) }}</div>
+    <div class="stat-note">Across all 3 branches</div>
+  </div>
+  <div class="stat-card highlight-brand">
+    <div class="stat-card-top">
+      <div class="stat-label">Available Copies</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M20 6L9 17l-5-5"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.available_copies) }}</div>
+    <div class="stat-note">On shelf &amp; ready to issue</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div class="stat-label">Borrowed Copies</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.copies_on_loan) }}</div>
+    <div class="stat-note">Currently on loan</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div class="stat-label">Active Loans</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.active_loans) }}</div>
+    <div class="stat-note">Open circulation records</div>
+  </div>
+  <div class="stat-card highlight-danger">
+    <div class="stat-card-top">
+      <div class="stat-label">Overdue Loans</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.overdue_loans) }}</div>
+    <div class="stat-note">Past due date</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div class="stat-label">Registered Members</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><circle cx="9" cy="8" r="3.5"/><path d="M3 19.5c0-3.1 2.7-5.5 6-5.5s6 2.4 6 5.5"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.registered_members) }}</div>
+    <div class="stat-note">Total reader directory</div>
+  </div>
+  <div class="stat-card highlight-brand">
+    <div class="stat-card-top">
+      <div class="stat-label">Active Members</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l2 2 4-4"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.active_members) }}</div>
+    <div class="stat-note">In good standing</div>
+  </div>
+  <div class="stat-card highlight-warning">
+    <div class="stat-card-top">
+      <div class="stat-label">Suspended Members</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.suspended_members) }}</div>
+    <div class="stat-note">Borrowing paused</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-top">
+      <div class="stat-label">Pending Reservations</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.pending_reservations) }}</div>
+    <div class="stat-note">Waiting in FIFO queue</div>
+  </div>
+  <div class="stat-card highlight-warning">
+    <div class="stat-card-top">
+      <div class="stat-label">Ready for Pickup</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ "{:,}".format(stats.ready_for_pickup_reservations) }}</div>
+    <div class="stat-note">Held on pickup shelf</div>
+  </div>
+  <div class="stat-card highlight-danger">
+    <div class="stat-card-top">
+      <div class="stat-label">Outstanding Fines</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9h6M9 12h6"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ stats.total_outstanding_fines|inr }}</div>
+    <div class="stat-note">Unpaid assessed balance</div>
+  </div>
+  <div class="stat-card highlight-brand">
+    <div class="stat-card-top">
+      <div class="stat-label">Fine Payments Collected</div>
+      <span class="stat-icon-well" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </span>
+    </div>
+    <div class="stat-value">{{ stats.fine_payments_collected|inr }}</div>
+    <div class="stat-note">Cumulative settled receipts</div>
+  </div>
+</section>
+
+<section class="card" aria-label="Quick Actions">
+  <div class="card-header">
+    <h2 class="card-title">Permission-Aware Desk Actions</h2>
+    <span class="text-muted" style="font-size:0.81rem;">Signed in as <strong>{{ current_user.role }}</strong></span>
+  </div>
+  <div class="card-body">
+    <div class="quick-actions-grid">
+      <a class="quick-action-tile" href="{{ url_for('books.list_books') }}">
+        Search the Catalog
+        <span>Title, author, ISBN, &amp; branch availability</span>
+      </a>
+      {% if current_user.is_admin %}
+      <a class="quick-action-tile" href="{{ url_for('books.create_book') }}">
+        + Add a Book
+        <span>Catalog a new edition with ISBN checksum validation</span>
+      </a>
+      {% endif %}
+      {% if current_user.can_circulate %}
+      <a class="quick-action-tile" href="{{ url_for('members.register') }}">
+        + Register a Member
+        <span>Enroll BASIC, STANDARD, or PREMIUM reader</span>
+      </a>
+      <a class="quick-action-tile" href="{{ url_for('circulation.index') }}#issue-panel">
+        Issue a Book
+        <span>Atomic checkout with tier &amp; hold verification</span>
+      </a>
+      <a class="quick-action-tile" href="{{ url_for('circulation.index') }}#return-panel">
+        Return a Book
+        <span>Process return, fine calc &amp; FIFO hold trigger</span>
+      </a>
+      {% else %}
+      <a class="quick-action-tile" href="{{ url_for('members.list_members') }}">
+        Browse Member Directory
+        <span>Inspect reader profiles, tiers &amp; active loans</span>
+      </a>
+      {% endif %}
+      <a class="quick-action-tile" href="{{ url_for('reservations.list_reservations') }}">
+        View Reservations
+        <span>FIFO waiting queues &amp; pickup deadlines</span>
+      </a>
+      <a class="quick-action-tile" href="{{ url_for('fines.list_fines', outstanding_only='1') }}">
+        {{ 'Record a Fine Payment' if current_user.can_circulate else 'Inspect Fine Ledger' }}
+        <span>Holiday-aware INR assessments &amp; receipts</span>
+      </a>
+      <a class="quick-action-tile" href="{{ url_for('reports.index', type='overdue') }}">
+        Open Overdue Reports
+        <span>Branch-wise overdue items &amp; safe CSV export</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="card" aria-label="Book Discovery">
+  <div class="card-header">
+    <h2 class="card-title">Catalog Discovery — From the Shelves</h2>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('books.list_books') }}">Browse Full Catalog</a>
+  </div>
+  <div class="card-body">
+    {% if featured_books %}
+    <div class="book-discovery-grid">
+      {% for b in featured_books %}
+      {% set ns = namespace(avail=0, on_loan=0, reserved=0, total=0) %}
+      {% for c in b.copies if c.status != 'WITHDRAWN' %}
+        {% set ns.total = ns.total + 1 %}
+        {% if c.status == 'AVAILABLE' %}{% set ns.avail = ns.avail + 1 %}
+        {% elif c.status == 'ON_LOAN' %}{% set ns.on_loan = ns.on_loan + 1 %}
+        {% elif c.status == 'RESERVED' %}{% set ns.reserved = ns.reserved + 1 %}
+        {% endif %}
+      {% endfor %}
+      <article class="book-discovery-card">
+        {{ book_cover_placeholder(b, 'md') }}
+        <div class="book-discovery-meta">
+          <div>
+            <a class="book-discovery-title" href="{{ url_for('books.detail', book_id=b.id) }}">{{ b.title }}</a>
+            <div class="book-discovery-author">{{ b.author_names }}</div>
+            <div class="text-muted" style="font-size:0.77rem; margin-top:0.26rem;">
+              <span class="catalog-chip">{{ b.category }}</span> · <span class="mono">{{ b.isbn or 'Heritage Edition' }}</span>
+            </div>
+          </div>
+          <div class="inline-actions mt-1">
+            {% if ns.avail > 0 %}
+              <span class="badge badge-success"><span class="badge-glyph" aria-hidden="true">&#9679;</span>{{ ns.avail }} Available</span>
+            {% elif ns.reserved > 0 %}
+              <span class="badge badge-info"><span class="badge-glyph" aria-hidden="true">&#9733;</span>Reserved ({{ ns.reserved }})</span>
+            {% elif ns.on_loan > 0 %}
+              <span class="badge badge-warning"><span class="badge-glyph" aria-hidden="true">&#9670;</span>Borrowed ({{ ns.on_loan }})</span>
+            {% else %}
+              <span class="badge badge-neutral"><span class="badge-glyph" aria-hidden="true">&#9675;</span>Unavailable</span>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Catalog Volumes Registered Yet</h3>
+      <p>Seed the Lucknow catalog or add a new book to populate the reading shelves.</p>
+      {% if current_user.is_admin %}
+        <div class="mt-1"><a class="btn btn-primary btn-sm" href="{{ url_for('books.create_book') }}">+ Add First Book</a></div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card" aria-label="Branch Summary">
+  <div class="card-header">
+    <h2 class="card-title">Lucknow Branch Network Summary</h2>
+  </div>
+  <div class="table-wrap">
+    {% if stats.branch_summaries %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Branch</th>
+          <th>Status</th>
+          <th>Total Copies</th>
+          <th>Available</th>
+          <th>On Loan</th>
+          <th>Reserved</th>
+          <th>Active Loans</th>
+          <th>Overdue</th>
+          <th>Ready Pickups</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for br in stats.branch_summaries %}
+        <tr>
+          <td>
+            <strong class="serif-title">{{ br.branch_name }}</strong>
+            <div class="mono text-muted">{{ br.branch_code }}</div>
+          </td>
+          <td>{{ status_badge('ACTIVE' if br.is_active else 'WITHDRAWN') }}</td>
+          <td>{{ "{:,}".format(br.total_copies) }}</td>
+          <td><strong>{{ "{:,}".format(br.available_copies) }}</strong></td>
+          <td>{{ "{:,}".format(br.on_loan_copies) }}</td>
+          <td>{{ "{:,}".format(br.reserved_copies) }}</td>
+          <td>{{ "{:,}".format(br.active_loans) }}</td>
+          <td>
+            {% if br.overdue_loans > 0 %}
+              <span class="badge badge-danger"><span class="badge-glyph" aria-hidden="true">&#9650;</span>{{ br.overdue_loans }}</span>
+            {% else %}
+              0
+            {% endif %}
+          </td>
+          <td>{{ br.ready_pickups }}</td>
+          <td>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('reports.index', type='overdue', branch_id=br.branch_id) }}">Branch Overdues</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Branches Seeded Yet</h3>
+      <p>Run <code>python scripts/seed_data.py</code> to initialize the three Lucknow library branches.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="card" aria-label="Recent Circulation">
+    <div class="card-header">
+      <h2 class="card-title">Recent Circulation Loans</h2>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('circulation.index', status='ALL') }}">All Loans</a>
+    </div>
+    <div class="table-wrap">
+      {% if stats.recent_loans %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Loan #</th>
+            <th>Book &amp; Copy</th>
+            <th>Member</th>
+            <th>Due</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ln in stats.recent_loans %}
+          <tr>
+            <td class="mono">{{ ln.loan_number }}</td>
+            <td>
+              <a class="serif-title" href="{{ url_for('books.detail', book_id=ln.copy.book.id) }}"><strong>{{ ln.copy.book.title }}</strong></a>
+              <div class="mono text-muted">{{ ln.copy.accession_number }} · {{ ln.issuing_branch.code }}</div>
+            </td>
+            <td><a href="{{ url_for('members.detail', member_id=ln.member.id) }}">{{ ln.member.member_code }}</a><div class="text-muted" style="font-size:0.78rem;">{{ ln.member.full_name }}</div></td>
+            <td>{{ ln.due_date.isoformat() }}</td>
+            <td>{{ status_badge(ln.status) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <h3>No Circulation Loans Yet</h3>
+        <p>Issue books from the Circulation Desk or import historical records to view activity.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card" aria-label="Recent Library Ledger Events">
+    <div class="card-header">
+      <h2 class="card-title">Recent Library Activity</h2>
+      {% if current_user.is_admin %}
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.audit') }}">Audit Ledger</a>
+      {% endif %}
+    </div>
+    <div class="table-wrap">
+      {% if recent_activity %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Event</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ev in recent_activity %}
+          <tr>
+            <td class="text-muted" style="font-size:0.78rem; white-space:nowrap;">{{ ev.created_at|ist_dt }}</td>
+            <td><span class="mono" style="font-size:0.76rem;"><strong>{{ ev.event_type }}</strong></span></td>
+            <td>{{ ev.summary }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <h3>No Recent Activity Recorded</h3>
+        <p>Catalog changes, member registrations, circulation events, and reservations appear here automatically.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

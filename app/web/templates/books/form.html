@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Book' if is_edit else 'Add Book' }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('books.list_books') }}">Books</a> / {{ 'Edit #' ~ book.id if is_edit else 'New Catalog Record' }}
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ 'Edit Catalog Book' if is_edit else 'Add New Catalog Book' }}</h1>
+    <p class="page-subtitle">Validates ISBN-10 / ISBN-13 checksums and enforces catalog duplicate prevention rules.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-body">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.title.id }}">Title *</label>
+          {{ form.title(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.subtitle.id }}">Subtitle</label>
+          {{ form.subtitle(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.isbn.id }}">ISBN-10 or ISBN-13 (leave blank if unnumbered)</label>
+          {{ form.isbn(class="form-control", placeholder="e.g. 9788126712342 or 0306406152") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.author_names.id }}">Authors (comma-separated) *</label>
+          {{ form.author_names(class="form-control", placeholder="e.g. Munshi Premchand, Amritlal Nagar") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.publisher.id }}">Publisher *</label>
+          {{ form.publisher(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.publication_year.id }}">Publication Year *</label>
+          {{ form.publication_year(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.category.id }}">Category / Subject *</label>
+          {{ form.category(class="form-control", placeholder="e.g. Hindi Literature") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.language.id }}">Language *</label>
+          {{ form.language(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.edition.id }}">Edition</label>
+          {{ form.edition(class="form-control", placeholder="e.g. 2nd Revised Edition") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.description.id }}">Description</label>
+        {{ form.description(class="form-control", rows="3") }}
+      </div>
+
+      <div class="inline-actions mt-1">
+        <button type="submit" class="btn btn-primary">{{ 'Save Changes' if is_edit else 'Create Catalog Record' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('books.detail', book_id=book.id) if is_edit else url_for('books.list_books') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

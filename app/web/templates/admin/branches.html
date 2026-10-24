@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Branches | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Branches</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Library Branches</h1>
+    <p class="page-subtitle">Manage Lucknow network branches, contact information, and operational status.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Add New Branch</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.branches') }}">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.code.id }}">Branch Code *</label>
+          {{ form.code(class="form-control", placeholder="e.g. LKO-CHK") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.name.id }}">Branch Name *</label>
+          {{ form.name(class="form-control", placeholder="e.g. Chowk Heritage Branch") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.pincode.id }}">PIN Code *</label>
+          {{ form.pincode(class="form-control", placeholder="226003") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.phone.id }}">Phone *</label>
+          {{ form.phone(class="form-control", placeholder="+91-522-2250101") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.email.id }}">Email *</label>
+          {{ form.email(class="form-control", placeholder="chowk@pustakalaya.org") }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ form.address.id }}">Street Address *</label>
+        {{ form.address(class="form-control") }}
+      </div>
+      <div class="checkbox-row">
+        {{ form.is_active() }}
+        <label for="{{ form.is_active.id }}">Branch is active for circulation</label>
+      </div>
+      <button type="submit" class="btn btn-primary">+ Create Branch</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Configured Branches ({{ branches|length }})</h2></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name &amp; Address</th>
+          <th>Contact</th>
+          <th>Status</th>
+          <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in branches %}
+        <tr>
+          <td class="mono"><strong>{{ b.code }}</strong></td>
+          <td>
+            <strong>{{ b.name }}</strong>
+            <div class="text-muted" style="font-size:0.8rem;">{{ b.address }}, {{ b.city }}, {{ b.state }} — {{ b.pincode }}</div>
+          </td>
+          <td>{{ b.phone }}<div class="text-muted" style="font-size:0.78rem;">{{ b.email }}</div></td>
+          <td>{{ status_badge('ACTIVE' if b.is_active else 'WITHDRAWN') }}</td>
+          <td>
+            <details>
+              <summary class="btn btn-secondary btn-sm">Edit Branch</summary>
+              <form method="post" action="{{ url_for('admin.update_branch', branch_id=b.id) }}" class="mt-1" style="min-width:260px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_form.csrf_token._value() }}">
+                <div class="form-group">
+                  <label class="form-label" for="br_{{ b.id }}_name">Name</label>
+                  <input id="br_{{ b.id }}_name" name="name" type="text" class="form-control" value="{{ b.name }}" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="br_{{ b.id }}_address">Address</label>
+                  <input id="br_{{ b.id }}_address" name="address" type="text" class="form-control" value="{{ b.address }}" required>
+                </div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="br_{{ b.id }}_pincode">PIN</label>
+                    <input id="br_{{ b.id }}_pincode" name="pincode" type="text" class="form-control" value="{{ b.pincode }}" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="br_{{ b.id }}_phone">Phone</label>
+                    <input id="br_{{ b.id }}_phone" name="phone" type="text" class="form-control" value="{{ b.phone }}" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="br_{{ b.id }}_email">Email</label>
+                  <input id="br_{{ b.id }}_email" name="email" type="email" class="form-control" value="{{ b.email }}" required>
+                </div>
+                <div class="checkbox-row">
+                  <input id="br_{{ b.id }}_active" name="is_active" type="checkbox" value="y" {% if b.is_active %}checked{% endif %}>
+                  <label for="br_{{ b.id }}_active">Active</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Save Branch</button>
+              </form>
+            </details>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

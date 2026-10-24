@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ member.member_code }} — {{ member.full_name }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('members.list_members') }}">Members</a> / {{ member.member_code }}
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ member.full_name }} <span class="mono text-muted" style="font-size:1.05rem;">({{ member.member_code }})</span></h1>
+    <p class="page-subtitle">
+      Tier: <strong>{{ member.tier.code }}</strong> ({{ member.tier.name }}) · Registered {{ member.registration_date.isoformat() }}
+    </p>
+  </div>
+  <div class="header-actions">
+    {% if current_user.can_circulate %}
+      <a class="btn btn-secondary" href="{{ url_for('members.edit', member_id=member.id) }}">Edit Member</a>
+      <a class="btn btn-primary" href="{{ url_for('circulation.index', member=member.member_code) }}">Issue Book</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Borrowing Eligibility</h2>
+      {% if profile.eligibility.eligible %}
+        <span class="badge badge-success">ELIGIBLE TO BORROW</span>
+      {% else %}
+        <span class="badge badge-danger">BORROWING RESTRICTED</span>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <p><strong>Active Loans:</strong> {{ profile.eligibility.active_loans }} / {{ profile.eligibility.max_active_loans }} ({{ profile.eligibility.remaining_loan_slots }} remaining)</p>
+      <p><strong>Active Overdue Loans:</strong> {{ profile.eligibility.active_overdue_loans }}</p>
+      <p><strong>Outstanding Fine Balance:</strong> {{ profile.outstanding_balance|inr }} (blocking threshold: {{ profile.eligibility.fine_blocking_threshold|inr }})</p>
+      {% if not profile.eligibility.eligible %}
+        <div class="alert alert-danger mb-0 mt-1">
+          <div>
+            <strong>Why borrowing is currently blocked:</strong>
+            <ul style="margin:0.35rem 0 0 1.2rem; padding:0;">
+              {% for r in profile.eligibility.reasons %}
+                <li>{{ r }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Contact &amp; Membership Standing</h2>
+      {{ status_badge(member.status) }}
+    </div>
+    <div class="card-body">
+      <p><strong>Email:</strong> {{ member.email or '—' }} · <strong>Phone:</strong> {{ member.phone or '—' }}</p>
+      <p><strong>Address:</strong> {{ member.address or '—' }}</p>
+      <p><strong>Home Branch:</strong> {{ member.home_branch.name if member.home_branch else 'Any Branch' }}</p>
+      <p><strong>Expiry Date:</strong> {{ member.expiry_date.isoformat() if member.expiry_date else 'No Expiry' }}</p>
+
+      {% if current_user.can_circulate %}
+      <hr style="border:none; border-top:1px solid var(--border-subtle); margin:0.9rem 0;">
+      <form method="post" action="{{ url_for('members.change_status', member_id=member.id) }}" data-confirm="Update membership status for {{ member.member_code }}?">
+        {{ status_form.hidden_tag() }}
+        <div class="form-grid">
+          <div>
+            <label class="form-label" for="{{ status_form.new_status.id }}">Change Status</label>
+            {{ status_form.new_status(class="form-control") }}
+          </div>
+          <div>
+            <label class="form-label" for="{{ status_form.reason.id }}">Reason</label>
+            {{ status_form.reason(class="form-control", placeholder="Reason for change...") }}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm mt-1">Update Membership Status</button>
+      </form>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Active Loans ({{ profile.active_loans|length }})</h2></div>
+  <div class="table-wrap">
+    {% if profile.active_loans %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Loan #</th>
+          <th>Book Title</th>
+          <th>Copy Accession</th>
+          <th>Branch</th>
+          <th>Due Date</th>
+          <th>Renewals</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in profile.active_loans %}
+        <tr>
+          <td class="mono">{{ ln.loan_number }}</td>
+          <td><a href="{{ url_for('books.detail', book_id=ln.copy.book.id) }}">{{ ln.copy.book.title }}</a></td>
+          <td class="mono">{{ ln.copy.accession_number }}</td>
+          <td>{{ ln.issuing_branch.code }}</td>
+          <td>
+            {{ ln.due_date.isoformat() }}
+            {% if ln.due_date < today %}<span class="badge badge-danger">OVERDUE</span>{% endif %}
+          </td>
+          <td>{{ ln.renewal_count }} / {{ member.tier.max_renewals }}</td>
+          <td>
+            {% if current_user.can_circulate %}
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('circulation.index', return_ref=ln.copy.accession_number) }}">Return</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No active loans currently checked out.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Reservations ({{ profile.reservations|length }})</h2></div>
+    <div class="table-wrap">
+      {% if profile.reservations %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Reservation #</th>
+            <th>Book</th>
+            <th>Status</th>
+            <th>Allocated Copy / Deadline</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in profile.reservations %}
+          <tr>
+            <td class="mono">{{ r.reservation_number }}</td>
+            <td><a href="{{ url_for('books.detail', book_id=r.book.id) }}">{{ r.book.title }}</a></td>
+            <td>{{ status_badge(r.status) }}</td>
+            <td>
+              {% if r.allocated_copy %}
+                <span class="mono">{{ r.allocated_copy.accession_number }}</span>
+                {% if r.pickup_deadline_at %}<div class="text-muted" style="font-size:0.78rem;">By {{ r.pickup_deadline_at|ist_dt }}</div>{% endif %}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>No reservations placed.</p></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Fines &amp; Payments ({{ profile.fines|length }} fines)</h2></div>
+    <div class="table-wrap">
+      {% if profile.fines %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fine #</th>
+            <th>Assessed</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in profile.fines %}
+          <tr>
+            <td class="mono">{{ f.fine_number }}</td>
+            <td>{{ f.assessed_amount|inr }}</td>
+            <td><strong>{{ f.outstanding_balance|inr }}</strong></td>
+            <td>{{ status_badge(f.status) }}</td>
+            <td><a class="btn btn-secondary btn-sm" href="{{ url_for('fines.detail', fine_id=f.id) }}">Ledger</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>Clean fine record — no fines assessed.</p></div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Complete Borrowing History (Recent {{ profile.loan_history|length }})</h2></div>
+  <div class="table-wrap">
+    {% if profile.loan_history %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Loan #</th>
+          <th>Book Title</th>
+          <th>Copy</th>
+          <th>Checked Out</th>
+          <th>Due Date</th>
+          <th>Returned</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in profile.loan_history %}
+        <tr>
+          <td class="mono">{{ ln.loan_number }}</td>
+          <td>{{ ln.copy.book.title }}</td>
+          <td class="mono">{{ ln.copy.accession_number }}</td>
+          <td>{{ ln.checked_out_at|ist_dt }}</td>
+          <td>{{ ln.due_date.isoformat() }}</td>
+          <td>{{ ln.returned_at|ist_dt if ln.returned_at else '—' }}</td>
+          <td>{{ status_badge(ln.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No borrowing history yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

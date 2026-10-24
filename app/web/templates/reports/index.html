@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Reports &amp; Exports | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Operational Reports &amp; CSV Exports</h1>
+    <p class="page-subtitle">Branch overdue reports, active loans, inventory availability, member histories, fines, reservations, and data quality.</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-primary" href="{{ url_for('reports.export_overdue_csv', branch_id=selected_branch_id or '', mode=overdue_mode) }}">Download Overdue CSV</a>
+  </div>
+</div>
+
+<nav class="tab-strip" aria-label="Report Types">
+  {% for key, label in report_tabs %}
+    <a class="tab-pill {% if report_type == key %}active{% endif %}" href="{{ url_for('reports.index', type=key, branch_id=selected_branch_id or '') }}">{{ label }}</a>
+  {% endfor %}
+</nav>
+
+{% if report_type != 'data_quality' %}
+<form method="get" action="{{ url_for('reports.index') }}" class="filter-bar">
+  <input type="hidden" name="type" value="{{ report_type }}">
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Lucknow Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if report_type == 'overdue' %}
+  <div class="filter-field">
+    <label class="form-label" for="mode">Overdue Scope</label>
+    <select id="mode" name="mode">
+      <option value="active" {% if overdue_mode == 'active' %}selected{% endif %}>Currently Active Overdue Loans</option>
+      <option value="historical" {% if overdue_mode == 'historical' %}selected{% endif %}>Returned Late Historical Loans</option>
+    </select>
+  </div>
+  {% elif report_type == 'inventory' %}
+  <div class="filter-field">
+    <label class="form-label" for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="checkbox-row" style="margin-bottom:0.35rem;">
+    <input id="available_only" name="available_only" type="checkbox" value="1" {% if available_only %}checked{% endif %}>
+    <label for="available_only">Available copies &gt; 0</label>
+  </div>
+  {% else %}
+  <div class="filter-field">
+    <label class="form-label" for="q">Search Filter</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="Member, book, or reference #">
+  </div>
+  {% endif %}
+
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Run Report</button>
+    <a class="btn btn-secondary" href="{{ url_for('reports.index', type=report_type) }}">Reset</a>
+  </div>
+</form>
+{% endif %}
+
+{% if report_type == 'overdue' %}
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Overdue Items by Branch ({{ "{:,}".format(report_page.total) }})</h2>
+  </div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Branch</th>
+          <th>Loan #</th>
+          <th>Book &amp; Copy</th>
+          <th>Member</th>
+          <th>Due Date</th>
+          <th>Days Overdue</th>
+          <th>Estimated / Assessed Fine</th>
+          <th>Member Total Unpaid</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in report_page.items %}
+        <tr>
+          <td><strong>{{ r.branch_code }}</strong><div class="text-muted" style="font-size:0.78rem;">{{ r.branch_name }}</div></td>
+          <td class="mono">{{ r.loan_number }}</td>
+          <td>
+            <a href="{{ url_for('books.detail', book_id=r.book_id) }}"><strong>{{ r.book_title }}</strong></a>
+            <div class="mono text-muted">{{ r.copy_accession }}</div>
+          </td>
+          <td>
+            <a href="{{ url_for('members.detail', member_id=r.member_id) }}">{{ r.member_code }}</a>
+            <div class="text-muted" style="font-size:0.8rem;">{{ r.member_name }}</div>
+          </td>
+          <td>{{ r.due_date.isoformat() }}</td>
+          <td><span class="badge badge-danger">{{ r.days_overdue }} cal / {{ r.eligible_overdue_days }} chg</span></td>
+          <td><strong>{{ r.estimated_fine|inr }}</strong></td>
+          <td>{{ r.member_total_outstanding_fine|inr }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>Zero Matching Overdue Items</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type in ('active_loans', 'member_history') %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">{{ 'Active Loans' if report_type == 'active_loans' else 'Member Borrowing History' }} ({{ "{:,}".format(report_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Loan #</th>
+          <th>Book &amp; Copy</th>
+          <th>Member</th>
+          <th>Branch</th>
+          <th>Checkout / Due</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in report_page.items %}
+        <tr>
+          <td class="mono">{{ ln.loan_number }}</td>
+          <td>{{ ln.copy.book.title }}<div class="mono text-muted">{{ ln.copy.accession_number }}</div></td>
+          <td><a href="{{ url_for('members.detail', member_id=ln.member.id) }}">{{ ln.member.member_code }} · {{ ln.member.full_name }}</a></td>
+          <td>{{ ln.issuing_branch.code }}</td>
+          <td>{{ ln.checked_out_at.strftime('%Y-%m-%d') }} &rarr; {{ ln.due_date.isoformat() }}</td>
+          <td>{{ status_badge(ln.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Loans Found</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type == 'inventory' %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Branch Title Holdings ({{ "{:,}".format(report_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Branch</th>
+          <th>Book Title</th>
+          <th>Category</th>
+          <th>ISBN</th>
+          <th>Available</th>
+          <th>On Loan</th>
+          <th>Reserved</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in report_page.items %}
+        <tr>
+          <td><strong>{{ r.branch_code }}</strong></td>
+          <td><a href="{{ url_for('books.detail', book_id=r.book_id) }}">{{ r.book_title }}</a></td>
+          <td>{{ r.category }}</td>
+          <td class="mono">{{ r.isbn or '—' }}</td>
+          <td><strong>{{ r.available_copies }}</strong></td>
+          <td>{{ r.on_loan_copies }}</td>
+          <td>{{ r.reserved_copies }}</td>
+          <td>{{ r.total_copies }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Inventory Rows Found</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type == 'outstanding_fines' %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Outstanding Fines ({{ "{:,}".format(report_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead><tr><th>Fine #</th><th>Member</th><th>Loan</th><th>Assessed</th><th>Paid</th><th>Unpaid Balance</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for f in report_page.items %}
+        <tr>
+          <td class="mono"><a href="{{ url_for('fines.detail', fine_id=f.id) }}">{{ f.fine_number }}</a></td>
+          <td><a href="{{ url_for('members.detail', member_id=f.member.id) }}">{{ f.member.member_code }} · {{ f.member.full_name }}</a></td>
+          <td class="mono">{{ f.loan.loan_number }}</td>
+          <td>{{ f.assessed_amount|inr }}</td>
+          <td>{{ f.paid_amount|inr }}</td>
+          <td><strong>{{ f.outstanding_balance|inr }}</strong></td>
+          <td>{{ status_badge(f.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Outstanding Fines</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type == 'fine_collections' %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Fine Collection Receipts ({{ "{:,}".format(report_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead><tr><th>Receipt #</th><th>Fine #</th><th>Member</th><th>Method</th><th>Amount</th><th>Paid At</th></tr></thead>
+      <tbody>
+        {% for p in report_page.items %}
+        <tr>
+          <td class="mono">{{ p.receipt_number }}</td>
+          <td class="mono"><a href="{{ url_for('fines.detail', fine_id=p.fine.id) }}">{{ p.fine.fine_number }}</a></td>
+          <td>{{ p.member.member_code }} · {{ p.member.full_name }}</td>
+          <td>{{ status_badge(p.payment_method) }}</td>
+          <td><strong>{{ p.amount|inr }}</strong></td>
+          <td>{{ p.paid_at|ist_dt }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Fine Payments Recorded</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type in ('pending_reservations', 'pickup_reservations') %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Reservations ({{ "{:,}".format(report_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if report_page.items %}
+    <table class="data-table">
+      <thead><tr><th>Reservation #</th><th>Book</th><th>Member</th><th>Status / Pos</th><th>Allocated Copy &amp; Deadline</th></tr></thead>
+      <tbody>
+        {% for r in report_page.items %}
+        <tr>
+          <td class="mono">{{ r.reservation_number }}</td>
+          <td><a href="{{ url_for('books.detail', book_id=r.book.id) }}">{{ r.book.title }}</a></td>
+          <td><a href="{{ url_for('members.detail', member_id=r.member.id) }}">{{ r.member.member_code }} · {{ r.member.full_name }}</a></td>
+          <td>
+            {{ status_badge(r.status) }}
+            {% if queue_positions.get(r.id) %} · #{{ queue_positions.get(r.id) }}{% endif %}
+          </td>
+          <td>
+            {% if r.allocated_copy %}
+              <span class="mono">{{ r.allocated_copy.accession_number }}</span>
+              {% if r.pickup_deadline_at %} ({{ r.pickup_deadline_at|ist_dt }}){% endif %}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Matching Reservations</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(report_page, 'reports.index') }}
+</section>
+
+{% elif report_type == 'data_quality' %}
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Data Quality Summary</h2>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('data_quality.index') }}">Open Full Data Quality Console</a>
+  </div>
+  <div class="table-wrap">
+    {% if dq_summary and dq_summary.breakdown_by_code %}
+    <table class="data-table">
+      <thead><tr><th>Disposition</th><th>Issue Code</th><th>Count</th></tr></thead>
+      <tbody>
+        {% for disp, code, cnt in dq_summary.breakdown_by_code %}
+        <tr>
+          <td>{{ status_badge(disp) }}</td>
+          <td class="mono"><strong>{{ code }}</strong></td>
+          <td><strong>{{ cnt }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No import batches executed yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Fines &amp; Payments | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fine Ledger &amp; Settlements</h1>
+    <p class="page-subtitle">Holiday- and grace-aware INR fine assessments, outstanding balances, and partial/full payment processing.</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-secondary" href="{{ url_for('fines.payments_history') }}">Payment Receipts History</a>
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('fines.list_fines') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="q">Fine #, Loan #, or Member</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="Search fines...">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="status">Fine Status</label>
+    <select id="status" name="status">
+      <option value="">All Statuses</option>
+      {% for st in statuses %}
+        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="checkbox-row" style="margin-bottom:0.35rem;">
+    <input id="outstanding_only" name="outstanding_only" type="checkbox" value="1" {% if outstanding_only %}checked{% endif %}>
+    <label for="outstanding_only">Outstanding balance only</label>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('fines.list_fines') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Assessed Fines ({{ "{:,}".format(results.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fine #</th>
+          <th>Loan &amp; Book</th>
+          <th>Member</th>
+          <th>Overdue Days</th>
+          <th>Assessed</th>
+          <th>Paid</th>
+          <th>Balance</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in results.items %}
+        <tr>
+          <td class="mono"><strong>{{ f.fine_number }}</strong></td>
+          <td>
+            <div class="mono">{{ f.loan.loan_number }}</div>
+            <div class="text-muted" style="font-size:0.8rem;">{{ f.loan.copy.book.title }}</div>
+          </td>
+          <td>
+            <a href="{{ url_for('members.detail', member_id=f.member.id) }}">{{ f.member.member_code }}</a>
+            <div class="text-muted" style="font-size:0.8rem;">{{ f.member.full_name }}</div>
+          </td>
+          <td>{{ f.eligible_overdue_days }}d @ {{ f.daily_rate_applied|inr }}</td>
+          <td>{{ f.assessed_amount|inr }}</td>
+          <td>{{ f.paid_amount|inr }}</td>
+          <td><strong>{{ f.outstanding_balance|inr }}</strong></td>
+          <td>{{ status_badge(f.status) }}</td>
+          <td>
+            <a class="btn {{ 'btn-primary' if f.outstanding_balance > 0 and current_user.can_circulate else 'btn-secondary' }} btn-sm" href="{{ url_for('fines.detail', fine_id=f.id) }}">
+              {{ 'Record Payment' if f.outstanding_balance > 0 and current_user.can_circulate else 'View Ledger' }}
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Fine Ledger Entries Found</h3>
+      <p>No assessed fines match this filter—readers in this view are currently clear of overdue balances.</p>
+      <div class="mt-1"><a class="btn btn-secondary btn-sm" href="{{ url_for('fines.list_fines', outstanding_only='0') }}">View Complete Fine Ledger</a></div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'fines.list_fines') }}
+</section>
+{% endblock %}

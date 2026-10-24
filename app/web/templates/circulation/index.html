@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Circulation Desk | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Circulation Desk</h1>
+    <p class="page-subtitle">Atomic issue, return, damaged/lost handling, and policy-checked loan renewals.</p>
+  </div>
+</div>
+
+{% if current_user.can_circulate %}
+<div class="grid-2">
+  <section class="card" id="issue-panel">
+    <div class="card-header"><h2 class="card-title">Issue Physical Copy</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('circulation.issue') }}">
+        {{ issue_form.hidden_tag() }}
+        <div class="form-group">
+          <label class="form-label" for="{{ issue_form.member_identifier.id }}">Member Code or ID *</label>
+          {{ issue_form.member_identifier(class="form-control", placeholder="e.g. MEM-000001") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ issue_form.copy_identifier.id }}">Copy Accession Number *</label>
+          {{ issue_form.copy_identifier(class="form-control", placeholder="e.g. LKO-HZR-000001") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ issue_form.issuing_branch_id.id }}">Issuing Branch</label>
+          {{ issue_form.issuing_branch_id(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Issue Copy to Member</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="card" id="return-panel">
+    <div class="card-header"><h2 class="card-title">Return Physical Copy</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('circulation.return_copy') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label" for="{{ return_form.identifier.id }}">Copy Accession Number or Loan Number *</label>
+          {{ return_form.identifier(class="form-control", placeholder="e.g. LKO-HZR-000001 or LN-20261024-...") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ return_form.returned_branch_id.id }}">Receiving Branch</label>
+          {{ return_form.returned_branch_id(class="form-control") }}
+        </div>
+        <div class="checkbox-row">
+          {{ return_form.returned_damaged() }}
+          <label for="{{ return_form.returned_damaged.id }}">Copy returned in damaged condition (routes copy to DAMAGED repair queue)</label>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ return_form.return_notes.id }}">Return / Condition Notes</label>
+          {{ return_form.return_notes(class="form-control", placeholder="Optional desk note or damage description") }}
+        </div>
+        <button type="submit" class="btn btn-accent btn-block">Complete Return &amp; Assess Fine</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endif %}
+
+<form method="get" action="{{ url_for('circulation.index') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="q">Loan #, Copy Accession, Title, or Member</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="Search circulation records...">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="status">Loan Status</label>
+    <select id="status" name="status">
+      {% for st in statuses %}
+        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Issuing Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="checkbox-row" style="margin-bottom:0.35rem;">
+    <input id="overdue_only" name="overdue_only" type="checkbox" value="1" {% if overdue_only %}checked{% endif %}>
+    <label for="overdue_only">Active overdue only</label>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('circulation.index') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Circulation Ledger ({{ "{:,}".format(loans_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if loans_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Loan #</th>
+          <th>Book &amp; Copy</th>
+          <th>Member</th>
+          <th>Branch</th>
+          <th>Checkout / Due</th>
+          <th>Renewals</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in loans_page.items %}
+        <tr>
+          <td class="mono">{{ ln.loan_number }}</td>
+          <td>
+            <a href="{{ url_for('books.detail', book_id=ln.copy.book.id) }}"><strong>{{ ln.copy.book.title }}</strong></a>
+            <div class="mono text-muted">{{ ln.copy.accession_number }}</div>
+          </td>
+          <td>
+            <a href="{{ url_for('members.detail', member_id=ln.member.id) }}">{{ ln.member.member_code }}</a>
+            <div class="text-muted" style="font-size:0.8rem;">{{ ln.member.full_name }} ({{ ln.member.tier.code }})</div>
+          </td>
+          <td>{{ ln.issuing_branch.code }}</td>
+          <td>
+            <div>Out: {{ ln.checked_out_at.strftime('%Y-%m-%d') }}</div>
+            <div><strong>Due: {{ ln.due_date.isoformat() }}</strong></div>
+            {% if ln.returned_at %}<div class="text-muted" style="font-size:0.78rem;">Ret: {{ ln.returned_at.strftime('%Y-%m-%d') }}</div>{% endif %}
+          </td>
+          <td>{{ ln.renewal_count }} / {{ ln.member.tier.max_renewals }}</td>
+          <td>
+            {% if ln.status == 'ACTIVE' and ln.due_date < today %}
+              <span class="badge badge-danger">OVERDUE</span>
+            {% else %}
+              {{ status_badge(ln.status) }}
+            {% endif %}
+          </td>
+          <td>
+            {% if ln.status == 'ACTIVE' and current_user.can_circulate %}
+            <div class="inline-actions">
+              <a class="btn btn-primary btn-sm" href="{{ url_for('circulation.index', return_ref=ln.copy.accession_number) }}">Return</a>
+              <form method="post" action="{{ url_for('circulation.renew', loan_id=ln.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-secondary btn-sm">Renew</button>
+              </form>
+              <form method="post" action="{{ url_for('circulation.report_lost', loan_id=ln.id) }}" style="display:inline;" data-confirm="Mark copy {{ ln.copy.accession_number }} as LOST and close loan {{ ln.loan_number }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="notes" value="Reported lost at circulation desk">
+                <button type="submit" class="btn btn-danger btn-sm">Lost</button>
+              </form>
+            </div>
+            {% elif ln.fine %}
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('fines.detail', fine_id=ln.fine.id) }}">Fine {{ ln.fine.assessed_amount|inr }}</a>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Circulation Loans Match This Filter</h3>
+      <p>Adjust your search criteria or switch status filter to inspect active, returned, or historical loans.</p>
+      <div class="mt-1"><a class="btn btn-secondary btn-sm" href="{{ url_for('circulation.index') }}">Reset Loan Filter</a></div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(loans_page, 'circulation.index') }}
+</section>
+{% endblock %}

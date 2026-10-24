@@ -1,0 +1,2606 @@
+/* ==========================================================================
+   PUSTAKALAYA (पुस्तकालय) — PREMIUM SKEUOMORPHIC BOTANICAL DESIGN SYSTEM
+   100% Local & Offline · Peaceful Botanical Light & Moonlit Forest Dark
+   ========================================================================== */
+
+:root,
+html[data-theme="day"] {
+  color-scheme: light;
+
+  /* Light Mode: Peaceful Botanical Library Palette */
+  --bg-canvas: #F2F6F1;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #E9F0E8;
+  --bg-inset: #E3EBE2;
+  --bg-hover: #EDF3EC;
+  --bg-table-head: #ECF2EB;
+  --bg-input: #F7FAF6;
+  --bg-input-focus: #FFFFFF;
+
+  /* Typography Tokens (WCAG AA/AAA Contrast Verified) */
+  --text-heading: #1E2E27;
+  --text-primary: #26372F;
+  --text-secondary: #516257;
+  --text-muted: #66766B;
+  --link-fg: #3A604D;
+  --link-hover-fg: #244233;
+
+  /* Calm Botanical Accents (Zero warm amber/orange/gold/brown dominance) */
+  --accent-primary: #668875;
+  --accent-primary-strong: #4A6C59;
+  --accent-primary-deep: #395747;
+  --accent-secondary: #8CA99A;
+  --accent-mist: #91B5B5;
+  --accent-tint: #E5EFE8;
+  --accent-mist-tint: #E4EFEF;
+
+  /* Sidebar Botanical Cypress Tokens */
+  --sidebar-bg-top: #1B2B25;
+  --sidebar-bg-bottom: #22352E;
+  --sidebar-surface-inset: #15231E;
+  --sidebar-border: #2F463D;
+  --sidebar-fg: #E6EFEA;
+  --sidebar-fg-muted: #9EB4A8;
+  --sidebar-active-bg: rgba(140, 169, 154, 0.20);
+  --sidebar-active-border: #8AB6A0;
+
+  /* Borders & Specular Highlights */
+  --border-subtle: #D5E1D6;
+  --border-strong: #BCCDC0;
+  --border-accent: #8CA99A;
+  --edge-highlight: rgba(255, 255, 255, 0.92);
+  --edge-highlight-soft: rgba(255, 255, 255, 0.65);
+
+  /* Focus Indicator: Accessible Botanical Green */
+  --focus-ring: #3B6B54;
+  --focus-halo: rgba(59, 107, 84, 0.24);
+
+  /* Semantic Status Tokens (Restrained Botanical & Mineral Tones) */
+  --status-success-bg: #E3F0E8;
+  --status-success-fg: #23573C;
+  --status-success-border: #B7D5C4;
+
+  --status-warning-bg: #E2EFEF;
+  --status-warning-fg: #265359;
+  --status-warning-border: #B3D1D3;
+
+  --status-danger-bg: #F5E6E8;
+  --status-danger-fg: #872B36;
+  --status-danger-border: #DFBCC1;
+
+  --status-info-bg: #E4EEF3;
+  --status-info-fg: #284C61;
+  --status-info-border: #B9D0DC;
+
+  --status-neutral-bg: #E7EEE7;
+  --status-neutral-fg: #44554B;
+  --status-neutral-border: #CBD8CC;
+
+  /* ========================================================================
+     5 DISTINCT SKEUOMORPHIC DEPTH LEVELS (LIGHT MODE)
+     ======================================================================== */
+  /* 1. Inset / Recessed Surfaces (inputs, wells, tracks) */
+  --depth-inset:
+    inset 0 1px 2px rgba(28, 48, 38, 0.08),
+    inset 0 0 0 1px rgba(38, 55, 47, 0.02),
+    0 1px 0 rgba(255, 255, 255, 0.88);
+
+  /* 2. Standard Tactile Cards */
+  --depth-card:
+    inset 0 1px 0 var(--edge-highlight),
+    0 1px 2px rgba(26, 44, 35, 0.05),
+    0 4px 12px rgba(26, 44, 35, 0.04);
+
+  /* 3. Elevated Panels & Physical Book Surfaces */
+  --depth-elevated:
+    inset 0 1px 0 #FFFFFF,
+    0 2px 5px rgba(26, 44, 35, 0.06),
+    0 10px 24px rgba(26, 44, 35, 0.065);
+
+  /* 4. Interactive Physical Controls (rest / hover / pressed) */
+  --depth-control:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(26, 44, 35, 0.09),
+    0 2px 4px rgba(26, 44, 35, 0.05);
+  --depth-control-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 3px 7px rgba(26, 44, 35, 0.11),
+    0 1px 2px rgba(26, 44, 35, 0.07);
+  --depth-control-active:
+    inset 0 2px 4px rgba(20, 35, 28, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.7);
+
+  --depth-primary-btn:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(16, 30, 23, 0.22),
+    0 2px 5px rgba(36, 62, 49, 0.22);
+  --depth-primary-btn-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(16, 30, 23, 0.24),
+    0 4px 10px rgba(36, 62, 49, 0.28);
+  --depth-primary-btn-active:
+    inset 0 2px 5px rgba(14, 26, 20, 0.38),
+    0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* 5. Floating Dialogs, Menus & Notifications */
+  --depth-dialog:
+    inset 0 1px 0 #FFFFFF,
+    0 20px 46px rgba(22, 38, 31, 0.16),
+    0 4px 12px rgba(22, 38, 31, 0.08);
+
+  /* Book Spine & Page-Edge Tokens */
+  --book-page-edge: #E5ECE5;
+  --book-shadow:
+    2px 0 0 var(--book-page-edge),
+    3px 0 0 #CBD7CC,
+    4px 4px 10px rgba(24, 42, 34, 0.16);
+  --book-shadow-hover:
+    2px 0 0 var(--book-page-edge),
+    3px 0 0 #BFCDBE,
+    6px 8px 16px rgba(24, 42, 34, 0.22);
+
+  /* Radii (restrained, architectural — never overly rounded) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --sidebar-width: 266px;
+
+  /* Literary & Editorial Typography Stack (100% Local) */
+  --font-serif: "Lora", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, "DejaVu Serif", serif;
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "DejaVu Sans", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+}
+
+/* ==========================================================================
+   DARK MODE: MOONLIT FOREST LIBRARY
+   Deep green-black surfaces, restrained emerald tones, cool blue-green moonlight
+   ========================================================================== */
+html[data-theme="night"] {
+  color-scheme: dark;
+
+  --bg-canvas: #101A19;
+  --bg-surface: #172422;
+  --bg-surface-secondary: #1E302C;
+  --bg-inset: #0C1514;
+  --bg-hover: #1C2D29;
+  --bg-table-head: #14201E;
+  --bg-input: #0D1716;
+  --bg-input-focus: #12201E;
+
+  --text-heading: #ECF4EF;
+  --text-primary: #E4EEE8;
+  --text-secondary: #A4B8AD;
+  --text-muted: #849A8F;
+  --link-fg: #96C2AE;
+  --link-hover-fg: #B8DDD0;
+
+  --accent-primary: #8AB6A0;
+  --accent-primary-strong: #375B4B;
+  --accent-primary-deep: #2B493C;
+  --accent-secondary: #7FAEAD;
+  --accent-mist: #A7C5D5;
+  --accent-tint: rgba(138, 182, 160, 0.14);
+  --accent-mist-tint: rgba(167, 197, 213, 0.13);
+
+  --sidebar-bg-top: #0C1514;
+  --sidebar-bg-bottom: #121E1C;
+  --sidebar-surface-inset: #09100F;
+  --sidebar-border: #243832;
+  --sidebar-fg: #E4EEE8;
+  --sidebar-fg-muted: #93A99E;
+  --sidebar-active-bg: rgba(138, 182, 160, 0.16);
+  --sidebar-active-border: #8AB6A0;
+
+  --border-subtle: #2B4039;
+  --border-strong: #38534A;
+  --border-accent: #5C8574;
+  --edge-highlight: rgba(214, 238, 228, 0.075);
+  --edge-highlight-soft: rgba(167, 197, 213, 0.05);
+
+  /* Focus Indicator: Visible Pale Botanical Green */
+  --focus-ring: #8AB6A0;
+  --focus-halo: rgba(138, 182, 160, 0.25);
+
+  /* Dark-Mode Status Tokens (Cool Botanical & Moonlight Balanced) */
+  --status-success-bg: rgba(74, 148, 108, 0.18);
+  --status-success-fg: #9DD5B6;
+  --status-success-border: rgba(122, 192, 152, 0.32);
+
+  --status-warning-bg: rgba(127, 174, 173, 0.17);
+  --status-warning-fg: #AED7D6;
+  --status-warning-border: rgba(127, 174, 173, 0.34);
+
+  --status-danger-bg: rgba(190, 84, 96, 0.20);
+  --status-danger-fg: #F0AAB3;
+  --status-danger-border: rgba(214, 112, 124, 0.35);
+
+  --status-info-bg: rgba(167, 197, 213, 0.16);
+  --status-info-fg: #C0DCEB;
+  --status-info-border: rgba(167, 197, 213, 0.32);
+
+  --status-neutral-bg: rgba(164, 184, 173, 0.12);
+  --status-neutral-fg: #C5D5CC;
+  --status-neutral-border: rgba(164, 184, 173, 0.24);
+
+  /* ========================================================================
+     5 DISTINCT SKEUOMORPHIC DEPTH LEVELS (DARK MODE)
+     Restrained edge highlights & subtle separation rather than heavy black shadows
+     ======================================================================== */
+  --depth-inset:
+    inset 0 1px 3px rgba(3, 8, 7, 0.58),
+    0 1px 0 rgba(196, 226, 214, 0.045);
+
+  --depth-card:
+    inset 0 1px 0 var(--edge-highlight),
+    0 2px 6px rgba(4, 9, 8, 0.28),
+    0 0 0 1px rgba(167, 197, 213, 0.02);
+
+  --depth-elevated:
+    inset 0 1px 0 rgba(218, 240, 232, 0.10),
+    0 6px 18px rgba(3, 8, 7, 0.36);
+
+  --depth-control:
+    inset 0 1px 0 rgba(218, 240, 232, 0.09),
+    inset 0 -1px 0 rgba(3, 8, 7, 0.35),
+    0 2px 4px rgba(3, 8, 7, 0.28);
+  --depth-control-hover:
+    inset 0 1px 0 rgba(218, 240, 232, 0.14),
+    inset 0 -1px 0 rgba(3, 8, 7, 0.35),
+    0 4px 9px rgba(3, 8, 7, 0.36);
+  --depth-control-active:
+    inset 0 2px 4px rgba(2, 6, 5, 0.55),
+    0 1px 0 rgba(196, 226, 214, 0.05);
+
+  --depth-primary-btn:
+    inset 0 1px 0 rgba(232, 248, 240, 0.22),
+    inset 0 -1px 0 rgba(6, 14, 12, 0.42),
+    0 2px 6px rgba(4, 10, 9, 0.36);
+  --depth-primary-btn-hover:
+    inset 0 1px 0 rgba(232, 248, 240, 0.30),
+    inset 0 -1px 0 rgba(6, 14, 12, 0.42),
+    0 4px 12px rgba(4, 10, 9, 0.44);
+  --depth-primary-btn-active:
+    inset 0 2px 5px rgba(3, 8, 7, 0.62),
+    0 1px 0 rgba(196, 226, 214, 0.06);
+
+  --depth-dialog:
+    inset 0 1px 0 rgba(220, 242, 234, 0.12),
+    0 22px 52px rgba(2, 7, 6, 0.60),
+    0 0 0 1px rgba(167, 197, 213, 0.10);
+
+  --book-page-edge: #283C36;
+  --book-shadow:
+    2px 0 0 var(--book-page-edge),
+    3px 0 0 #1B2B27,
+    4px 5px 12px rgba(2, 7, 6, 0.44);
+  --book-shadow-hover:
+    2px 0 0 #334B44,
+    3px 0 0 #21342F,
+    6px 9px 18px rgba(2, 7, 6, 0.54);
+}
+
+/* ==========================================================================
+   BASE RESET & TYPOGRAPHY HIERARCHY
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 15px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  line-height: 1.58;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth ~580ms environmental transition ONLY during intentional theme toggle */
+html.theme-transitioning body,
+html.theme-transitioning .sidebar,
+html.theme-transitioning .topbar,
+html.theme-transitioning .card,
+html.theme-transitioning .stat-card,
+html.theme-transitioning .filter-bar,
+html.theme-transitioning .welcome-sanctuary,
+html.theme-transitioning .reading-room-quote,
+html.theme-transitioning .book-discovery-card,
+html.theme-transitioning .auth-card,
+html.theme-transitioning .workspace-footer,
+html.theme-transitioning .form-control,
+html.theme-transitioning input,
+html.theme-transitioning select,
+html.theme-transitioning textarea {
+  transition:
+    background-color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 580ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 480ms ease,
+    box-shadow 580ms ease;
+}
+
+a {
+  color: var(--link-fg);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+a:hover {
+  color: var(--link-hover-fg);
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-inset);
+  padding: 0.1rem 0.38rem;
+  border-radius: var(--radius-xs);
+  color: var(--text-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--focus-halo);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0.65rem;
+  z-index: 1200;
+  background: var(--accent-primary-strong);
+  color: #FFFFFF;
+  padding: 0.52rem 0.95rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  box-shadow: var(--depth-elevated);
+}
+
+.skip-link:focus {
+  left: 0.85rem;
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.serif-title {
+  font-family: var(--font-serif);
+  letter-spacing: 0.004em;
+}
+
+/* ==========================================================================
+   LIVING BOTANICAL & MOONLIT FOREST SANCTUARY BACKDROP
+   Strictly decorative, aria-hidden="true", pointer-events: none, behind UI
+   ========================================================================== */
+.forest-sanctuary-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Daytime: Cool, peaceful morning daylight & botanical leaf dappling */
+.sanctuary-day-light {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 46% at 88% 4%, rgba(145, 181, 181, 0.20) 0%, rgba(140, 169, 154, 0.07) 48%, transparent 76%),
+    radial-gradient(ellipse 54% 42% at 10% 96%, rgba(102, 136, 117, 0.10) 0%, transparent 70%);
+  opacity: 1;
+  transition: opacity 640ms ease;
+}
+
+html[data-theme="day"][data-ambience="auto"] .sanctuary-day-light {
+  animation: daylightBreezeShift 24s ease-in-out infinite alternate;
+}
+
+html[data-theme="night"] .sanctuary-day-light {
+  opacity: 0;
+  animation: none;
+}
+
+/* Nighttime: Cool moonlit forest canopy & mist wash (zero orange/amber) */
+.sanctuary-night-moonlight {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 56% 46% at 86% 5%, rgba(167, 197, 213, 0.15) 0%, rgba(127, 174, 173, 0.05) 48%, transparent 75%),
+    radial-gradient(ellipse 70% 48% at 50% 102%, rgba(30, 48, 44, 0.55) 0%, transparent 72%),
+    radial-gradient(circle at 18% 22%, rgba(138, 182, 160, 0.06) 0%, transparent 44%);
+  opacity: 0;
+  transition: opacity 680ms ease;
+}
+
+html[data-theme="night"] .sanctuary-night-moonlight {
+  opacity: 1;
+}
+
+/* Botanical foliage, distant forest silhouettes & subtle edge grass */
+.sanctuary-botanical-frame {
+  position: absolute;
+  color: #668875;
+  opacity: 0.085;
+  transition: opacity 620ms ease, color 620ms ease;
+}
+
+html[data-theme="night"] .sanctuary-botanical-frame {
+  color: #7FAEAD;
+  opacity: 0.125;
+}
+
+.sanctuary-botanical-frame--top-right {
+  top: -10px;
+  right: -14px;
+  width: 350px;
+  height: 245px;
+}
+
+.sanctuary-botanical-frame--bottom-left {
+  bottom: -10px;
+  left: 256px;
+  width: 360px;
+  height: 195px;
+}
+
+/* Floating Moonlit Forest Lanterns (Cool Celadon & Pale Moonlight — Zero Amber) */
+.forest-lantern-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 680ms ease, visibility 680ms ease;
+}
+
+html[data-theme="night"]:not([data-ambience="off"]) .forest-lantern-layer {
+  opacity: 1;
+  visibility: visible;
+}
+
+html[data-ambience="off"] .forest-lantern-layer,
+html[data-ambience="off"] .forest-firefly-layer {
+  display: none !important;
+}
+
+.forest-lantern {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform, opacity;
+}
+
+.forest-lantern svg {
+  display: block;
+  filter: drop-shadow(0 0 8px rgba(167, 197, 213, 0.36));
+}
+
+.lantern-halo {
+  position: absolute;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(198, 232, 226, 0.20) 0%,
+    rgba(127, 174, 173, 0.07) 45%,
+    transparent 72%
+  );
+  animation: lanternMoonBreath 8s ease-in-out infinite alternate;
+}
+
+/* Outer-margin placement so lanterns never compete with reading or data entry */
+.forest-lantern--1 {
+  right: 3.4%;
+  top: 15%;
+  opacity: 0.72;
+  animation: lanternFloatA 27s ease-in-out infinite;
+}
+
+.forest-lantern--2 {
+  right: 10.5%;
+  top: 65%;
+  opacity: 0.54;
+  transform: scale(0.84);
+  animation: lanternFloatB 32s ease-in-out -9s infinite;
+}
+
+.forest-lantern--3 {
+  left: 288px;
+  top: 22%;
+  opacity: 0.48;
+  transform: scale(0.78);
+  animation: lanternFloatA 30s ease-in-out -14s infinite;
+}
+
+.forest-lantern--4 {
+  right: 5.2%;
+  top: 42%;
+  opacity: 0.42;
+  transform: scale(0.70);
+  animation: lanternFloatB 35s ease-in-out -5s infinite;
+}
+
+.forest-lantern--5 {
+  left: 312px;
+  top: 76%;
+  opacity: 0.38;
+  transform: scale(0.74);
+  animation: lanternFloatA 29s ease-in-out -19s infinite;
+}
+
+/* Minimal ambience: calm stationary glow on 2 subtle lanterns only */
+html[data-ambience="minimal"] .forest-lantern,
+html[data-ambience="minimal"] .lantern-halo {
+  animation: none !important;
+}
+html[data-ambience="minimal"] .forest-lantern--3,
+html[data-ambience="minimal"] .forest-lantern--4,
+html[data-ambience="minimal"] .forest-lantern--5 {
+  display: none;
+}
+
+/* Night Fireflies Layer (Cool-white, pale-green, and muted cyan-green — never neon) */
+.forest-firefly-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 700ms ease, visibility 700ms ease;
+}
+
+html[data-theme="night"]:not([data-ambience="off"]) .forest-firefly-layer {
+  opacity: 1;
+  visibility: visible;
+}
+
+.forest-firefly {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--ff-core, #E4F4EE) 0%,
+    var(--ff-mid, #9CC8BC) 60%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px 1.5px var(--ff-glow, rgba(167, 197, 213, 0.28));
+  opacity: 0;
+  animation:
+    fireflyDrift var(--ff-drift, 20s) ease-in-out var(--ff-delay, 0s) infinite alternate,
+    fireflyGlow var(--ff-pulse, 10s) ease-in-out var(--ff-delay, 0s) infinite;
+}
+
+html[data-ambience="minimal"] .forest-firefly {
+  animation: fireflyGlow 13s ease-in-out var(--ff-delay, 0s) infinite !important;
+}
+
+@keyframes daylightBreezeShift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-10px, 7px, 0) scale(1.025); }
+}
+
+@keyframes lanternFloatA {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33%      { transform: translate3d(-6px, -14px, 0); }
+  66%      { transform: translate3d(5px, -6px, 0); }
+}
+
+@keyframes lanternFloatB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.82); }
+  50%      { transform: translate3d(8px, -16px, 0) scale(0.82); }
+}
+
+@keyframes lanternMoonBreath {
+  0%   { opacity: 0.65; transform: scale(0.95); }
+  100% { opacity: 0.98; transform: scale(1.05); }
+}
+
+@keyframes fireflyDrift {
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(var(--ff-dx, 14px), var(--ff-dy, -18px), 0); }
+  100% { transform: translate3d(calc(var(--ff-dx, 14px) * -0.55), calc(var(--ff-dy, -18px) * 0.45), 0); }
+}
+
+@keyframes fireflyGlow {
+  0%, 100% { opacity: 0.05; }
+  48%      { opacity: var(--ff-alpha, 0.46); }
+  64%      { opacity: calc(var(--ff-alpha, 0.46) * 0.68); }
+}
+
+/* ==========================================================================
+   APP SHELL & TACTILE BOTANICAL SIDEBAR NAVIGATION
+   ========================================================================== */
+.app-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 17, 0.52);
+  z-index: 35;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.sidebar-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--sidebar-bg-top) 0%, var(--sidebar-bg-bottom) 100%);
+  color: var(--sidebar-fg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.04),
+    2px 0 14px rgba(12, 22, 19, 0.14);
+  z-index: 40;
+}
+
+.sidebar-brand {
+  padding: 1.3rem 1.15rem 1.1rem;
+  border-bottom: 1px solid rgba(164, 184, 173, 0.14);
+  position: relative;
+}
+
+.sidebar-brand::after {
+  content: "";
+  position: absolute;
+  left: 1.15rem;
+  right: 1.15rem;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(138, 182, 160, 0.45), transparent);
+}
+
+.sidebar-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.78rem;
+  color: #EFF6F2;
+  text-decoration: none;
+}
+
+.sidebar-brand-link:hover {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(155deg, rgba(138, 182, 160, 0.22), rgba(145, 181, 181, 0.08));
+  border: 1px solid rgba(138, 182, 160, 0.36);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #B9DDD0;
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 2px 5px rgba(6, 12, 11, 0.28);
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.sidebar-brand-link:hover .brand-mark {
+  transform: translateY(-1px);
+  border-color: rgba(167, 197, 213, 0.55);
+}
+
+.brand-title {
+  font-family: var(--font-serif);
+  font-size: 1.26rem;
+  font-weight: 700;
+  letter-spacing: 0.012em;
+  line-height: 1.18;
+  display: block;
+  color: #F2F8F4;
+}
+
+.brand-subtitle {
+  font-size: 0.74rem;
+  color: var(--sidebar-fg-muted);
+  display: block;
+  margin-top: 0.14rem;
+}
+
+.sidebar-nav {
+  padding: 0.85rem 0.72rem;
+  flex: 1;
+}
+
+.nav-group-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--sidebar-fg-muted);
+  padding: 0.72rem 0.75rem 0.32rem;
+  font-weight: 700;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.68rem;
+  padding: 0.52rem 0.78rem;
+  margin-bottom: 0.16rem;
+  border-radius: var(--radius-sm);
+  color: rgba(230, 239, 234, 0.84);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition:
+    background-color 170ms ease,
+    color 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.nav-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--sidebar-active-border);
+  opacity: 0;
+  transform: scaleY(0.45);
+  transition: opacity 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  background: var(--sidebar-active-bg);
+  border-color: rgba(138, 182, 160, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 3px rgba(5, 11, 10, 0.22);
+  color: #F4FAF6;
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.nav-item-restricted {
+  opacity: 0.72;
+}
+
+.nav-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: #96B5A7;
+  transition: color 170ms ease, transform 170ms ease;
+}
+
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+  color: #BFE0D2;
+}
+
+.sidebar-footer {
+  padding: 0.95rem 1rem;
+  border-top: 1px solid rgba(164, 184, 173, 0.14);
+  background: var(--sidebar-surface-inset);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.24);
+}
+
+.user-pill {
+  font-size: 0.84rem;
+  margin-bottom: 0.65rem;
+}
+
+.user-pill strong {
+  display: block;
+  color: #EFF6F2;
+  font-family: var(--font-serif);
+  font-size: 0.93rem;
+}
+
+.user-pill span {
+  color: var(--sidebar-fg-muted);
+  font-size: 0.75rem;
+}
+
+.sidebar-footer .btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(164, 184, 173, 0.24);
+  color: #E8F2EC;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-footer .btn-secondary:hover {
+  background: rgba(138, 182, 160, 0.18);
+  border-color: rgba(138, 182, 160, 0.42);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   TOPBAR, READING ATMOSPHERE STATUS & TACTILE HORIZON THEME SWITCH
+   ========================================================================== */
+.workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.7rem 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow:
+    inset 0 -1px 0 var(--edge-highlight-soft),
+    0 2px 8px rgba(26, 44, 35, 0.04);
+}
+
+html[data-theme="night"] .topbar {
+  box-shadow:
+    inset 0 -1px 0 rgba(214, 238, 228, 0.04),
+    0 2px 10px rgba(3, 8, 7, 0.28);
+}
+
+.topbar-brand-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.topbar-network-name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text-heading);
+  font-size: 0.98rem;
+}
+
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  gap: 0.38rem;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.68rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.84rem;
+  box-shadow: var(--depth-control);
+  transition: transform 120ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.mobile-menu-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--depth-control-active);
+}
+
+.topbar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+/* Recessed Reading Atmosphere Pill */
+.atmosphere-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-inset);
+  color: var(--text-secondary);
+  font-size: 0.77rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.atmosphere-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 5px rgba(102, 136, 117, 0.45);
+}
+
+html[data-theme="night"] .atmosphere-dot {
+  background: var(--accent-mist);
+  box-shadow: 0 0 7px rgba(167, 197, 213, 0.65);
+}
+
+/* Tactile Ambience Quick-Cycle Button */
+.ambience-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0 0.68rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--depth-control);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.77rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.ambience-quick-btn:hover {
+  transform: translateY(-1px);
+  background: var(--bg-hover);
+  border-color: var(--border-accent);
+  color: var(--text-heading);
+  box-shadow: var(--depth-control-hover);
+}
+
+.ambience-quick-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--depth-control-active);
+}
+
+/* THE SIGNATURE SKEUOMORPHIC DAY/NIGHT HORIZON TOGGLE */
+.horizon-theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 34px;
+  padding: 0.2rem 0.68rem 0.2rem 0.26rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(180deg, #FFFFFF 0%, #EBF2EA 100%);
+  color: var(--text-heading);
+  font-family: inherit;
+  font-size: 0.79rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--depth-control);
+  transition:
+    transform 120ms ease,
+    background 460ms ease,
+    border-color 220ms ease,
+    box-shadow 180ms ease,
+    color 320ms ease;
+}
+
+html[data-theme="night"] .horizon-theme-toggle {
+  background: linear-gradient(180deg, #1E302C 0%, #152320 100%);
+  border-color: var(--border-strong);
+  color: var(--text-heading);
+}
+
+.horizon-theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-primary);
+  box-shadow: var(--depth-control-hover);
+}
+
+.horizon-theme-toggle:active {
+  transform: translateY(1px);
+  box-shadow: var(--depth-control-active);
+}
+
+.horizon-orb-track {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #D9E6DC 0%, #E7F0EE 100%);
+  border: 1px solid rgba(58, 96, 77, 0.20);
+  box-shadow: inset 0 1px 3px rgba(28, 48, 38, 0.14);
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: background 500ms ease, border-color 500ms ease;
+}
+
+html[data-theme="night"] .horizon-orb-track {
+  background: linear-gradient(180deg, #091211 0%, #132321 100%);
+  border-color: rgba(167, 197, 213, 0.26);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.65);
+}
+
+.horizon-stars {
+  position: absolute;
+  left: 6px;
+  top: 5px;
+  width: 16px;
+  height: 13px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 460ms ease, transform 460ms ease;
+  color: #A7C5D5;
+}
+
+html[data-theme="night"] .horizon-stars {
+  opacity: 0.9;
+  transform: translateY(0);
+}
+
+.horizon-orb {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #FFFFFF 0%, #DFECE3 100%);
+  box-shadow:
+    inset 0 1px 0 #FFFFFF,
+    0 1px 4px rgba(34, 58, 46, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3A604D;
+  transform: translateX(0);
+  transition:
+    transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 500ms ease,
+    box-shadow 500ms ease,
+    color 380ms ease;
+}
+
+html[data-theme="night"] .horizon-orb {
+  transform: translateX(22px);
+  background: radial-gradient(circle at 35% 35%, #29423E 0%, #182927 85%);
+  box-shadow:
+    0 0 8px rgba(167, 197, 213, 0.42),
+    inset 0 0 0 1px rgba(167, 197, 213, 0.45);
+  color: #CFE4EE;
+}
+
+.horizon-icon-sun,
+.horizon-icon-moon {
+  width: 11px;
+  height: 11px;
+  position: absolute;
+  transition: opacity 340ms ease, transform 460ms ease;
+}
+
+.horizon-icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.horizon-icon-moon {
+  opacity: 0;
+  transform: rotate(-35deg) scale(0.7);
+}
+
+html[data-theme="night"] .horizon-icon-sun {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.7);
+}
+
+html[data-theme="night"] .horizon-icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.horizon-label {
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE, WELCOME SANCTUARY & EDITORIAL TYPOGRAPHY
+   ========================================================================== */
+.main-content {
+  padding: 1.65rem 1.85rem 2.5rem;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+
+.workspace-footer {
+  margin-top: auto;
+  padding: 0.88rem 1.85rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface-secondary);
+  box-shadow: inset 0 1px 0 var(--edge-highlight-soft);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.breadcrumbs {
+  font-size: 0.81rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+.breadcrumbs a {
+  color: var(--text-secondary);
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+  padding-bottom: 0.88rem;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 0 var(--edge-highlight-soft);
+}
+
+.page-eyebrow {
+  font-size: 0.71rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+  color: var(--accent-primary-strong);
+  margin-bottom: 0.24rem;
+  display: block;
+}
+
+html[data-theme="night"] .page-eyebrow {
+  color: var(--accent-primary);
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.24;
+  letter-spacing: 0.004em;
+}
+
+.page-subtitle {
+  margin: 0.28rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.93rem;
+  max-width: 72ch;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* Dashboard Elevated Welcome Sanctuary (Depth Level 3) */
+.welcome-sanctuary {
+  position: relative;
+  background: linear-gradient(165deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.45rem 1.65rem;
+  margin-bottom: 1.35rem;
+  box-shadow: var(--depth-elevated);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.68fr) minmax(265px, 1fr);
+  gap: 1.35rem;
+  align-items: center;
+}
+
+html[data-theme="night"] .welcome-sanctuary {
+  background:
+    radial-gradient(circle at 92% 14%, rgba(167, 197, 213, 0.08) 0%, transparent 52%),
+    linear-gradient(165deg, #1A2A27 0%, #14211F 100%);
+}
+
+.welcome-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--accent-primary-strong);
+  margin-bottom: 0.35rem;
+}
+
+html[data-theme="night"] .welcome-meta-row {
+  color: var(--accent-primary);
+}
+
+.welcome-emblem {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-inset);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary-strong);
+}
+
+html[data-theme="night"] .welcome-emblem {
+  color: var(--accent-primary);
+}
+
+.welcome-heading {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  line-height: 1.22;
+  color: var(--text-heading);
+}
+
+.welcome-copy {
+  margin: 0.45rem 0 1.05rem;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+  max-width: 64ch;
+}
+
+/* Embossed Bookplate Quote ("From the Reading Room") */
+.reading-room-quote {
+  margin: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-top: 2px solid var(--accent-secondary);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  box-shadow: var(--depth-card);
+  position: relative;
+}
+
+html[data-theme="night"] .reading-room-quote {
+  background: var(--bg-inset);
+  border-top-color: var(--accent-mist);
+}
+
+.reading-room-kicker {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+  color: var(--accent-primary-strong);
+  margin-bottom: 0.38rem;
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+html[data-theme="night"] .reading-room-kicker {
+  color: var(--accent-mist);
+}
+
+.reading-room-quote blockquote {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.52;
+  color: var(--text-heading);
+}
+
+.reading-room-quote figcaption {
+  margin-top: 0.48rem;
+  font-size: 0.77rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   TACTILE CARDS, LAYERED STAT PANELS & PHYSICAL BOOK COVERS
+   ========================================================================== */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--depth-card);
+  margin-bottom: 1.35rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.card-header {
+  padding: 0.92rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, transparent 0%, rgba(102, 136, 117, 0.025) 100%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.card-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.07rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: 0.004em;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+/* Layered Skeuomorphic Statistics Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(194px, 1fr));
+  gap: 0.88rem;
+  margin-bottom: 1.45rem;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.96rem 1.08rem;
+  box-shadow: var(--depth-card);
+  position: relative;
+  transition:
+    transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--depth-elevated);
+}
+
+.stat-card.highlight-danger {
+  border-left: 3px solid var(--status-danger-fg);
+}
+
+.stat-card.highlight-warning {
+  border-left: 3px solid var(--accent-mist);
+}
+
+.stat-card.highlight-brand {
+  border-left: 3px solid var(--accent-primary);
+}
+
+.stat-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stat-icon-well {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-inset);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary-strong);
+  flex-shrink: 0;
+}
+
+html[data-theme="night"] .stat-icon-well {
+  color: var(--accent-primary);
+}
+
+.stat-card.highlight-danger .stat-icon-well {
+  color: var(--status-danger-fg);
+}
+
+.stat-icon-well svg {
+  width: 15px;
+  height: 15px;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.stat-value {
+  font-family: var(--font-serif);
+  font-size: 1.64rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-top: 0.26rem;
+  line-height: 1.16;
+}
+
+.stat-note {
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+  margin-top: 0.24rem;
+}
+
+/* Tactile Quick-Action Tiles */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 0.78rem;
+}
+
+.quick-action-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 0.9rem 1.02rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-primary);
+  box-shadow: var(--depth-control);
+  color: var(--text-heading);
+  font-weight: 600;
+  font-size: 0.91rem;
+  transition:
+    transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.quick-action-tile span {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.18rem;
+}
+
+.quick-action-tile:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-accent);
+  box-shadow: var(--depth-control-hover);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.quick-action-tile:active {
+  transform: translateY(1px);
+  box-shadow: var(--depth-control-active);
+}
+
+/* ==========================================================================
+   PHYSICAL BOOK-INSPIRED DISCOVERY CARDS & HARDCOVER PLACEHOLDERS
+   ========================================================================== */
+.book-discovery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(298px, 1fr));
+  gap: 0.95rem;
+}
+
+.book-discovery-card {
+  display: flex;
+  gap: 0.98rem;
+  padding: 0.96rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-card);
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.book-discovery-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-accent);
+  box-shadow: var(--depth-elevated);
+}
+
+/* Hardcover Linen Bookplate Placeholder with Spine Crease & Page-Block Depth */
+.book-cover-plate {
+  --cover-top: #3F6252;
+  --cover-bottom: #2E4B3E;
+  --cover-spine: #243C31;
+
+  width: 66px;
+  min-height: 92px;
+  border-radius: 2px 6px 6px 2px;
+  background: linear-gradient(155deg, var(--cover-top) 0%, var(--cover-bottom) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 6px solid var(--cover-spine);
+  padding: 0.42rem 0.4rem 0.4rem 0.46rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  color: #EDF5F0;
+  box-shadow:
+    inset 2px 0 3px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    var(--book-shadow);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease;
+}
+
+/* Subtle diagonal light sheen across book cover on hover */
+.book-cover-plate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.13) 48%,
+    transparent 76%
+  );
+  transform: translateX(-115%);
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.book-discovery-card:hover .book-cover-plate {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 2px 0 3px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    var(--book-shadow-hover);
+}
+
+.book-discovery-card:hover .book-cover-plate::after {
+  transform: translateX(115%);
+}
+
+/* 5 Cool Botanical & Slate Hardcover Binding Variations */
+.book-cover-plate--v0 { --cover-top: #446958; --cover-bottom: #304E40; --cover-spine: #233B30; }
+.book-cover-plate--v1 { --cover-top: #415F68; --cover-bottom: #2E464E; --cover-spine: #22353C; }
+.book-cover-plate--v2 { --cover-top: #52736A; --cover-bottom: #3B564F; --cover-spine: #2D433D; }
+.book-cover-plate--v3 { --cover-top: #385649; --cover-bottom: #263E34; --cover-spine: #1C2F27; }
+.book-cover-plate--v4 { --cover-top: #4B686E; --cover-bottom: #364E53; --cover-spine: #283B3F; }
+
+.book-cover-plate--lg {
+  width: 114px;
+  min-height: 158px;
+  padding: 0.72rem 0.65rem 0.68rem 0.72rem;
+  border-left-width: 8px;
+}
+
+.book-cover-plate--mini {
+  width: 34px;
+  min-height: 46px;
+  padding: 0.22rem;
+  border-left-width: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Embossed catalog label on hardcover board */
+.book-cover-cat {
+  font-size: 0.54rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #CFE3DA;
+  background: rgba(12, 22, 19, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  padding: 0.08rem 0.24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-cover-monogram {
+  font-family: var(--font-serif);
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.16;
+  color: #F4FAF6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.book-cover-plate--lg .book-cover-monogram {
+  font-size: 1.05rem;
+  -webkit-line-clamp: 4;
+}
+
+.book-cover-foot {
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  color: rgba(230, 242, 236, 0.76);
+  border-top: 1px solid rgba(214, 236, 226, 0.24);
+  padding-top: 0.18rem;
+}
+
+.book-discovery-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.book-discovery-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 0.99rem;
+  line-height: 1.3;
+  color: var(--text-heading);
+  display: block;
+}
+
+.book-discovery-author {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 0.16rem;
+}
+
+/* Embossed catalog tag chip */
+.catalog-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.46rem;
+  border-radius: var(--radius-xs);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--depth-inset);
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.book-title-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.book-title-link {
+  font-family: var(--font-serif);
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.15rem;
+}
+
+/* ==========================================================================
+   TACTILE SKEUOMORPHIC BUTTONS (Depth Level 4)
+   Raised at rest · Gentle lift on hover · Physical inward press on click
+   ========================================================================== */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.98rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.3;
+  user-select: none;
+  transition:
+    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.btn:hover:not(:disabled) {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  transition-duration: 90ms;
+}
+
+.btn:disabled {
+  opacity: 0.54;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Primary Botanical Button */
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent-primary-strong) 0%, var(--accent-primary-deep) 100%);
+  border-color: var(--accent-primary-deep);
+  color: #FFFFFF;
+  box-shadow: var(--depth-primary-btn);
+}
+
+html[data-theme="night"] .btn-primary {
+  background: linear-gradient(180deg, #93BEAA 0%, #7BA994 100%);
+  border-color: #699681;
+  color: #0D1916;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #537864 0%, #40614F 100%);
+  color: #FFFFFF;
+  box-shadow: var(--depth-primary-btn-hover);
+}
+
+html[data-theme="night"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #A1CBB7 0%, #87B49F 100%);
+  color: #091310;
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow: var(--depth-primary-btn-active);
+}
+
+/* Secondary Tactile Button */
+.btn-secondary {
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  box-shadow: var(--depth-control);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-surface);
+  border-color: var(--border-accent);
+  color: var(--text-heading);
+  box-shadow: var(--depth-control-hover);
+}
+
+.btn-secondary:active:not(:disabled) {
+  background: var(--bg-inset);
+  box-shadow: var(--depth-control-active);
+}
+
+/* Accent Seafoam / Slate-Mist Button */
+.btn-accent {
+  background: linear-gradient(180deg, #547A7A 0%, #426464 100%);
+  border-color: #385757;
+  color: #FFFFFF;
+  box-shadow: var(--depth-primary-btn);
+}
+
+html[data-theme="night"] .btn-accent {
+  background: linear-gradient(180deg, #8AB8B7 0%, #73A2A1 100%);
+  border-color: #628F8E;
+  color: #0B1616;
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: linear-gradient(180deg, #5E8787 0%, #4A6F6F 100%);
+  color: #FFFFFF;
+  box-shadow: var(--depth-primary-btn-hover);
+}
+
+html[data-theme="night"] .btn-accent:hover:not(:disabled) {
+  background: linear-gradient(180deg, #98C5C4 0%, #80AFAD 100%);
+  color: #081212;
+}
+
+.btn-accent:active:not(:disabled) {
+  box-shadow: var(--depth-primary-btn-active);
+}
+
+/* Destructive Action Button (Distinct & Unmistakable) */
+.btn-danger {
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--status-danger-bg) 100%);
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-fg);
+  box-shadow: var(--depth-control);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--status-danger-bg);
+  border-color: var(--status-danger-fg);
+  color: var(--status-danger-fg);
+  box-shadow: var(--depth-control-hover);
+}
+
+.btn-danger:active:not(:disabled) {
+  box-shadow: var(--depth-control-active);
+}
+
+.btn-sm {
+  padding: 0.32rem 0.68rem;
+  font-size: 0.8rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Real Loading / Submitting Indicator (Only active during genuine submission) */
+.btn.is-submitting::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  animation: tactileSpin 640ms linear infinite;
+}
+
+@keyframes tactileSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   PHYSICAL RECESSED INPUTS, SEARCH FIELDS & FORMS (Depth Level 1)
+   ========================================================================== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.95rem;
+}
+
+.form-group {
+  margin-bottom: 0.95rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0.34rem;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.52rem 0.74rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-input);
+  box-shadow: var(--depth-inset);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.91rem;
+  line-height: 1.42;
+  transition:
+    border-color 170ms ease,
+    background-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.86;
+}
+
+textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+input:hover:not(:disabled):not(:focus),
+select:hover:not(:disabled):not(:focus),
+textarea:hover:not(:disabled):not(:focus) {
+  border-color: var(--border-accent);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  background-color: var(--bg-input-focus);
+  border-color: var(--focus-ring);
+  box-shadow:
+    var(--depth-inset),
+    0 0 0 3px var(--focus-halo);
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"],
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+  border-color: var(--status-danger-fg);
+  box-shadow:
+    var(--depth-inset),
+    0 0 0 3px rgba(190, 84, 96, 0.18);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin: 0.55rem 0;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-primary-strong);
+  cursor: pointer;
+}
+
+html[data-theme="night"] .checkbox-row input[type="checkbox"] {
+  accent-color: var(--accent-primary);
+}
+
+/* Integrated Library Search & Filter Shelf */
+.filter-bar {
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--depth-card);
+  padding: 0.96rem 1.15rem;
+  margin-bottom: 1.18rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.78rem;
+  align-items: flex-end;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.filter-bar:focus-within {
+  border-color: var(--border-accent);
+  box-shadow: var(--depth-elevated);
+}
+
+.filter-field {
+  flex: 1 1 175px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ==========================================================================
+   TABLES, NON-COLOR-ONLY BADGES, TOAST ALERTS & FLOATING DIALOGS
+   ========================================================================== */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.885rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.72rem 0.92rem;
+  background: var(--bg-table-head);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: inset 0 1px 0 var(--edge-highlight-soft);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.72rem 0.92rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+  color: var(--text-primary);
+}
+
+.data-table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* Embossed Status Badges with Shape Glyphs (Never Color Alone) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.18rem 0.56rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+html[data-theme="night"] .badge {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.badge-glyph {
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.badge-success {
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  border-color: var(--status-success-border);
+}
+.badge-warning {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+  border-color: var(--status-warning-border);
+}
+.badge-danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger-fg);
+  border-color: var(--status-danger-border);
+}
+.badge-info {
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
+}
+.badge-neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-fg);
+  border-color: var(--status-neutral-border);
+}
+
+/* Tactile Flashed Notifications (Smooth Entry & Controlled Exit) */
+.alerts-stack {
+  margin-bottom: 1.2rem;
+}
+
+.alert {
+  padding: 0.82rem 1.05rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.58rem;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-shadow: var(--depth-card);
+  animation: alertSlideIn 210ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.alert.is-dismissing {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes alertSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.alert-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+}
+
+.alert-dismiss {
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  opacity: 0.72;
+  cursor: pointer;
+  padding: 0.1rem 0.38rem;
+  border-radius: var(--radius-xs);
+  font-size: 1rem;
+  line-height: 1;
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+
+.alert-dismiss:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.alert-success {
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  border-color: var(--status-success-border);
+  border-left-color: var(--status-success-fg);
+}
+.alert-warning {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+  border-color: var(--status-warning-border);
+  border-left-color: var(--status-warning-fg);
+}
+.alert-danger {
+  background: var(--status-danger-bg);
+  color: var(--status-danger-fg);
+  border-color: var(--status-danger-border);
+  border-left-color: var(--status-danger-fg);
+}
+.alert-info {
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
+  border-left-color: var(--status-info-fg);
+}
+
+/* Floating Confirmation Dialog (Depth Level 5 + Smooth Open/Close) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(11, 20, 18, 0.56);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.modal-backdrop.is-closing {
+  opacity: 0;
+}
+
+.confirm-dialog {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+  padding: 1.45rem 1.55rem;
+  box-shadow: var(--depth-dialog);
+  color: var(--text-primary);
+  animation: dialogRiseIn 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 170ms ease, opacity 170ms ease;
+}
+
+.modal-backdrop.is-closing .confirm-dialog {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+@keyframes dialogRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.confirm-dialog-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  color: var(--text-heading);
+}
+
+.confirm-dialog-body {
+  margin: 0 0 1.2rem;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+/* Pagination & Tactile Segmented Tab Strip */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface-secondary);
+  box-shadow: inset 0 1px 0 var(--edge-highlight-soft);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.42rem;
+}
+
+.tab-strip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.2rem;
+  padding: 0.32rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--depth-inset);
+}
+
+.tab-pill {
+  padding: 0.4rem 0.84rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.tab-pill:hover {
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--text-heading);
+  text-decoration: none;
+}
+
+html[data-theme="night"] .tab-pill:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-pill.active {
+  background: var(--bg-surface);
+  border-color: var(--border-strong);
+  box-shadow: var(--depth-control);
+  color: var(--text-heading);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.2rem 1.25rem;
+  color: var(--text-secondary);
+}
+
+.empty-state h3 {
+  margin: 0 0 0.36rem;
+  font-family: var(--font-serif);
+  color: var(--text-heading);
+  font-size: 1.1rem;
+}
+
+/* Appearance & Library Ambience Tactile Radio Cards */
+.ambience-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.9rem;
+}
+
+.ambience-choice-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.74rem 0.86rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-secondary) 100%);
+  box-shadow: var(--depth-control);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    transform 130ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.ambience-choice-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-accent);
+  box-shadow: var(--depth-control-hover);
+}
+
+.ambience-choice-pill:active {
+  transform: translateY(1px);
+  box-shadow: var(--depth-control-active);
+}
+
+.ambience-choice-pill strong {
+  font-size: 0.88rem;
+  color: var(--text-heading);
+}
+
+.ambience-choice-pill span {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-top: 0.16rem;
+}
+
+.ambience-choice-pill[aria-checked="true"] {
+  border-color: var(--accent-primary);
+  background: var(--accent-tint);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-primary),
+    var(--depth-inset);
+}
+
+/* ==========================================================================
+   PUBLIC AUTHENTICATION & BOOKPLATE ENTRANCE SCREENS
+   ========================================================================== */
+.auth-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-floating-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1.2rem;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 445px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+  padding: 2.05rem;
+  box-shadow: var(--depth-dialog);
+}
+
+.auth-bookplate-header {
+  margin-bottom: 1.35rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 0 var(--edge-highlight-soft);
+}
+
+.text-muted { color: var(--text-muted); }
+.text-right { text-align: right; }
+.inline-actions { display: inline-flex; flex-wrap: wrap; gap: 0.42rem; align-items: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mb-0 { margin-bottom: 0; }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (DESKTOP -> TABLET -> MOBILE)
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .welcome-sanctuary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-102%);
+    transition: transform 230ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .main-content {
+    padding: 1.15rem 1rem 2rem;
+  }
+
+  .topbar {
+    padding: 0.7rem 1rem;
+  }
+
+  .workspace-footer {
+    padding: 0.85rem 1rem;
+  }
+
+  .sanctuary-botanical-frame--bottom-left {
+    left: -16px;
+  }
+
+  /* Reduce floating lantern count on tablet viewports */
+  .forest-lantern--3 {
+    left: 4%;
+  }
+  .forest-lantern--4,
+  .forest-lantern--5 {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .atmosphere-pill {
+    display: none;
+  }
+
+  .welcome-sanctuary {
+    padding: 1.15rem;
+  }
+
+  .welcome-heading {
+    font-size: 1.45rem;
+  }
+
+  .auth-floating-controls {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  /* Keep only 2 subtle distant lanterns on narrow mobile viewports */
+  .forest-lantern--3 {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   Stops lantern floating, firefly drift, and nonessential transitions while
+   keeping both Peaceful Botanical & Moonlit Forest themes crisp and tactile.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .forest-lantern,
+  .lantern-halo,
+  .forest-firefly,
+  .sanctuary-day-light {
+    animation: none !important;
+  }
+
+  .forest-firefly {
+    opacity: 0.24 !important;
+  }
+}

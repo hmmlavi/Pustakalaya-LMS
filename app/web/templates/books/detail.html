@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, book_cover_placeholder %}
+{% block title %}{{ book.title }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('books.list_books') }}">Books</a> / Book #{{ book.id }}
+</div>
+
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">{{ book.category }} · {{ book.language }}</span>
+    <h1 class="page-title">{{ book.title }}</h1>
+    {% if book.subtitle %}<p class="page-subtitle">{{ book.subtitle }}</p>{% endif %}
+  </div>
+  <div class="header-actions">
+    {% if current_user.is_admin %}
+      <a class="btn btn-secondary" href="{{ url_for('books.edit_book', book_id=book.id) }}">Edit Metadata</a>
+    {% endif %}
+    {% if current_user.can_circulate %}
+      <a class="btn btn-accent" href="{{ url_for('reservations.list_reservations', book_id=book.id) }}">Place Reservation</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Bibliographic Details</h2></div>
+    <div class="card-body" style="display:flex; gap:1.2rem; align-items:flex-start; flex-wrap:wrap;">
+      {{ book_cover_placeholder(book, 'lg') }}
+      <div style="flex:1; min-width:210px;">
+        <p style="margin-top:0;"><strong>Catalog ID:</strong> <span class="mono">#{{ book.id }}</span></p>
+        <p><strong>Authors:</strong> {{ book.author_names }}</p>
+        <p><strong>ISBN:</strong> <span class="mono">{{ book.isbn or 'None (Heritage Non-ISBN Edition)' }}</span></p>
+        <p><strong>Publisher:</strong> {{ book.publisher }} ({{ book.publication_year }})</p>
+        <p><strong>Edition:</strong> {{ book.edition or 'Standard' }}</p>
+        <p><strong>Category:</strong> {{ book.category }} · <strong>Language:</strong> {{ book.language }}</p>
+        {% if book.description %}
+          <p class="mt-1">{{ book.description }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Availability by Branch</h2></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Branch</th>
+            <th>Total</th>
+            <th>Available</th>
+            <th>On Loan</th>
+            <th>Reserved</th>
+            <th>Non-Circ.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in detail.branch_breakdown %}
+          <tr>
+            <td><strong>{{ row.branch_code }}</strong><div class="text-muted" style="font-size:0.79rem;">{{ row.branch_name }}</div></td>
+            <td>{{ row.total_copies }}</td>
+            <td><strong>{{ row.available_copies }}</strong></td>
+            <td>{{ row.on_loan_copies }}</td>
+            <td>{{ row.reserved_copies }}</td>
+            <td>{{ row.non_circulating_copies }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Physical Copies ({{ book.copies|length }})</h2>
+  </div>
+  <div class="table-wrap">
+    {% if book.copies %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Copy ID</th>
+          <th>Accession Number</th>
+          <th>Owning Branch</th>
+          <th>Acquisition Date</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for copy in book.copies %}
+        <tr>
+          <td class="mono">#{{ copy.id }}</td>
+          <td class="mono"><strong>{{ copy.accession_number }}</strong></td>
+          <td>{{ copy.owning_branch.code }} — {{ copy.owning_branch.name }}</td>
+          <td>{{ copy.acquisition_date.isoformat() }}</td>
+          <td>{{ status_badge(copy.status) }}</td>
+          <td>{{ copy.condition_notes or '—' }}</td>
+          <td>
+            {% if copy.status == 'AVAILABLE' and current_user.can_circulate %}
+              <a class="btn btn-primary btn-sm" href="{{ url_for('circulation.index', copy=copy.accession_number) }}">Issue Copy</a>
+            {% elif copy.status == 'ON_LOAN' and current_user.can_circulate %}
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('circulation.index', return_ref=copy.accession_number) }}">Return Copy</a>
+            {% else %}
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('copies.list_copies', q=copy.accession_number) }}">Manage</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Physical Copies Registered</h3>
+      <p>Add physical inventory copies below to make this title available for lending.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if current_user.is_admin %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Add Physical Copy for This Title</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('copies.add_copy') }}">
+      {{ copy_form.hidden_tag() }}
+      <input type="hidden" name="book_id" value="{{ book.id }}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ copy_form.owning_branch_id.id }}">Owning Branch</label>
+          {{ copy_form.owning_branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ copy_form.accession_number.id }}">Accession Number</label>
+          {{ copy_form.accession_number(class="form-control", placeholder="e.g. LKO-HZR-009500") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ copy_form.acquisition_date.id }}">Acquisition Date</label>
+          {{ copy_form.acquisition_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ copy_form.status.id }}">Initial Status</label>
+          {{ copy_form.status(class="form-control") }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ copy_form.condition_notes.id }}">Notes (Optional)</label>
+        {{ copy_form.condition_notes(class="form-control", rows="2") }}
+      </div>
+      <button type="submit" class="btn btn-primary">+ Register Physical Copy</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Active Waiting Queue ({{ detail.waiting_reservations|length }})</h2></div>
+    <div class="table-wrap">
+      {% if detail.waiting_reservations %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Queue #</th>
+            <th>Reservation #</th>
+            <th>Member</th>
+            <th>Preferred Branch</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in detail.waiting_reservations %}
+          <tr>
+            <td><strong>#{{ loop.index }}</strong></td>
+            <td class="mono">{{ r.reservation_number }}</td>
+            <td><a href="{{ url_for('members.detail', member_id=r.member.id) }}">{{ r.member.member_code }} · {{ r.member.full_name }}</a></td>
+            <td>{{ r.preferred_branch.code if r.preferred_branch else 'Any' }}</td>
+            <td>{{ r.created_at|ist_dt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>No waiting reservations for this title.</p></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Recent Borrowing History</h2></div>
+    <div class="table-wrap">
+      {% if detail.recent_loans %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Loan #</th>
+            <th>Copy</th>
+            <th>Member</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ln in detail.recent_loans %}
+          <tr>
+            <td class="mono">{{ ln.loan_number }}</td>
+            <td class="mono">{{ ln.copy.accession_number }}</td>
+            <td><a href="{{ url_for('members.detail', member_id=ln.member.id) }}">{{ ln.member.member_code }}</a></td>
+            <td>{{ ln.due_date.isoformat() }}</td>
+            <td>{{ status_badge(ln.status) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>No borrowing history recorded yet for this title.</p></div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

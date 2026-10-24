@@ -1,0 +1,41 @@
+name: Windows release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt pyinstaller==6.16.0
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Build Windows artifacts
+        shell: pwsh
+        run: .\scripts\build_windows.ps1
+      - name: Verify release files
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem dist\release
+          if ($files.Count -lt 3) { throw "Release output is incomplete" }
+          if ((Get-Item dist\release\Pustakalaya.exe).Length -le 0) { throw "Executable is empty" }
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $assets = Get-ChildItem -LiteralPath dist\release -File | ForEach-Object { $_.FullName }
+          if ($assets.Count -lt 3) { throw "No complete release asset set was found" }
+          gh release create $env:GITHUB_REF_NAME $assets --title $env:GITHUB_REF_NAME --generate-notes --verify-tag

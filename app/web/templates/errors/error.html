@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ status_code }} — {{ title }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body empty-state">
+    {{ status_badge('ERROR') }}
+    <div class="mono text-muted mt-1">HTTP {{ status_code }}</div>
+    <h1 class="page-title mt-1">{{ title }}</h1>
+    <p>{{ message }}</p>
+    <div class="mt-2">
+      <a class="btn btn-primary" href="{{ url_for('dashboard.index') }}">Return to Reading Room Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block public_content %}
+<main class="auth-page">
+  <div class="auth-card">
+    {{ status_badge('ERROR') }}
+    <div class="mono text-muted mt-1">HTTP {{ status_code }}</div>
+    <h1 class="page-title mt-1">{{ title }}</h1>
+    <p class="page-subtitle">{{ message }}</p>
+    <div class="mt-2">
+      <a class="btn btn-primary btn-block" href="{{ url_for('auth.login') }}">Return to Sign In</a>
+    </div>
+  </div>
+</main>
+{% endblock %}

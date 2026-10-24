@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Members | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Member Directory</h1>
+    <p class="page-subtitle">Manage memberships, borrowing tiers, standing, loans, reservations, and fines.</p>
+  </div>
+  <div class="header-actions">
+    <a class="btn btn-secondary" href="{{ url_for('members.tiers') }}">View Tier Policies</a>
+    {% if current_user.can_circulate %}
+      <a class="btn btn-primary" href="{{ url_for('members.register') }}">+ Register Member</a>
+    {% endif %}
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('members.list_members') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="q">Member Code, Name, Email, or Phone</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="e.g. MEM-000001 or Srivastava">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="tier">Tier</label>
+    <select id="tier" name="tier">
+      <option value="">All Tiers</option>
+      {% for t in tiers %}
+        <option value="{{ t }}" {% if selected_tier == t %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="status">Status</label>
+    <select id="status" name="status">
+      <option value="">All Statuses</option>
+      {% for st in statuses %}
+        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Home Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a class="btn btn-secondary" href="{{ url_for('members.list_members') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Registered Members ({{ "{:,}".format(results.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Member ID</th>
+          <th>Full Name &amp; Contact</th>
+          <th>Tier</th>
+          <th>Home Branch</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in results.items %}
+        <tr>
+          <td class="mono"><strong>{{ m.member_code }}</strong></td>
+          <td>
+            <a href="{{ url_for('members.detail', member_id=m.id) }}"><strong>{{ m.full_name }}</strong></a>
+            <div class="text-muted" style="font-size:0.8rem;">
+              {{ m.email or 'No email' }}{% if m.phone %} · {{ m.phone }}{% endif %}
+            </div>
+          </td>
+          <td>{{ status_badge(m.tier.code) }}</td>
+          <td>{{ m.home_branch.code if m.home_branch else '—' }}</td>
+          <td>{{ m.expiry_date.isoformat() if m.expiry_date else '—' }}</td>
+          <td>{{ status_badge(m.status) }}</td>
+          <td>
+            <div class="inline-actions">
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('members.detail', member_id=m.id) }}">Profile</a>
+              {% if m.status == 'ACTIVE' and current_user.can_circulate %}
+                <a class="btn btn-primary btn-sm" href="{{ url_for('circulation.index', member=m.member_code) }}">Issue</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Readers Matched Your Search</h3>
+      <p>Search by member code, name, email, or phone, or reset active tier and status filters.</p>
+      <div class="mt-1"><a class="btn btn-secondary btn-sm" href="{{ url_for('members.list_members') }}">Reset Member Filters</a></div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'members.list_members') }}
+</section>
+{% endblock %}

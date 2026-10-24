@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Physical Book Copies | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Physical Book Copies</h1>
+    <p class="page-subtitle">Manage branch-owned physical inventory, accession numbers, and validated copy-state transitions.</p>
+  </div>
+</div>
+
+{% if current_user.is_admin %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Add Physical Copy to Inventory</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('copies.add_copy') }}">
+      {{ add_form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ add_form.book_id.id }}">Catalog Book ID *</label>
+          {{ add_form.book_id(class="form-control", placeholder="e.g. 1") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ add_form.owning_branch_id.id }}">Owning Branch *</label>
+          {{ add_form.owning_branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ add_form.accession_number.id }}">Accession Number *</label>
+          {{ add_form.accession_number(class="form-control", placeholder="e.g. LKO-HZR-009001") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ add_form.acquisition_date.id }}">Acquisition Date</label>
+          {{ add_form.acquisition_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ add_form.status.id }}">Initial Status</label>
+          {{ add_form.status(class="form-control") }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">+ Register Copy</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+<form method="get" action="{{ url_for('copies.list_copies') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="filter_q">Accession #, Title, or ISBN</label>
+    <input id="filter_q" name="q" type="text" value="{{ query }}" placeholder="e.g. LKO-HZR-000001">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="filter_branch_id">Owning Branch</label>
+    <select id="filter_branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="filter_status">Copy Status</label>
+    <select id="filter_status" name="status">
+      <option value="">All Statuses</option>
+      {% for st in statuses %}
+        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('copies.list_copies') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Inventory Records ({{ "{:,}".format(results.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Accession #</th>
+          <th>Book Title</th>
+          <th>Owning Branch</th>
+          <th>Acquired</th>
+          <th>Status</th>
+          <th>Update State / Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in results.items %}
+        <tr>
+          <td class="mono">#{{ c.id }}</td>
+          <td class="mono"><strong>{{ c.accession_number }}</strong></td>
+          <td>
+            <a href="{{ url_for('books.detail', book_id=c.book.id) }}">{{ c.book.title }}</a>
+            {% if c.condition_notes %}<div class="text-muted" style="font-size:0.78rem;">{{ c.condition_notes }}</div>{% endif %}
+          </td>
+          <td>{{ c.owning_branch.code }}</td>
+          <td>{{ c.acquisition_date.isoformat() }}</td>
+          <td>{{ status_badge(c.status) }}</td>
+          <td>
+            {% if c.status == 'ON_LOAN' %}
+              <span class="text-muted" style="font-size:0.8rem;">Active loan — return via Circulation</span>
+            {% elif c.status == 'WITHDRAWN' %}
+              <span class="text-muted" style="font-size:0.8rem;">Withdrawn (Admin Corrections to reinstate)</span>
+            {% elif current_user.is_admin %}
+              <form method="post" action="{{ url_for('copies.change_status', copy_id=c.id) }}" class="inline-actions" data-confirm="Change inventory status for copy {{ c.accession_number }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="new_status" aria-label="New status for {{ c.accession_number }}" style="width:auto; padding:0.28rem 0.5rem; font-size:0.8rem;">
+                  <option value="AVAILABLE" {% if c.status == 'AVAILABLE' %}selected{% endif %}>AVAILABLE</option>
+                  <option value="DAMAGED" {% if c.status == 'DAMAGED' %}selected{% endif %}>DAMAGED</option>
+                  <option value="LOST" {% if c.status == 'LOST' %}selected{% endif %}>LOST</option>
+                  <option value="WITHDRAWN">WITHDRAWN</option>
+                </select>
+                <input type="text" name="note" placeholder="Reason..." aria-label="Status note" style="width:120px; padding:0.28rem 0.5rem; font-size:0.8rem;">
+                <button type="submit" class="btn btn-secondary btn-sm">Apply</button>
+              </form>
+            {% else %}
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('books.detail', book_id=c.book.id) }}">View Book</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Matching Physical Copies</h3>
+      <p>Try clearing branch or copy-state filters, or search by barcode / accession number.</p>
+      <div class="mt-1"><a class="btn btn-secondary btn-sm" href="{{ url_for('copies.list_copies') }}">Reset Copy Filters</a></div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'copies.list_copies') }}
+</section>
+{% endblock %}

@@ -1,0 +1,258 @@
+erDiagram
+    BRANCHES {
+        int id PK
+        varchar code UK
+        varchar name UK
+        varchar address
+        varchar city
+        varchar state
+        varchar pincode
+        varchar phone
+        varchar email
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    AUTHORS {
+        int id PK
+        varchar full_name
+        varchar normalized_name UK
+        text biography
+        int birth_year
+        datetime created_at
+        datetime updated_at
+    }
+
+    BOOKS {
+        int id PK
+        varchar title
+        varchar subtitle
+        varchar isbn UK "Nullable for unnumbered editions"
+        text description
+        varchar publisher
+        int publication_year
+        varchar language
+        varchar category
+        varchar edition
+        datetime created_at
+        datetime updated_at
+    }
+
+    BOOK_AUTHORS {
+        int book_id PK,FK
+        int author_id PK,FK
+        int author_order
+    }
+
+    BOOK_COPIES {
+        int id PK
+        int book_id FK
+        int owning_branch_id FK
+        varchar accession_number UK
+        varchar status "AVAILABLE|ON_LOAN|RESERVED|LOST|DAMAGED|WITHDRAWN"
+        date acquisition_date
+        text condition_notes
+        datetime created_at
+        datetime updated_at
+    }
+
+    MEMBERSHIP_TIERS {
+        int id PK
+        varchar code UK "BASIC|STANDARD|PREMIUM"
+        varchar name
+        text description
+        int max_active_loans
+        int loan_duration_days
+        int max_renewals
+        int renewal_duration_days
+        int max_active_reservations
+        int grace_period_days
+        int daily_fine_rate "Stored as integer paise"
+        int max_fine_per_loan "Stored as integer paise"
+        int fine_blocking_threshold "Stored as integer paise"
+        boolean borrowing_enabled
+        datetime created_at
+        datetime updated_at
+    }
+
+    MEMBERS {
+        int id PK
+        varchar member_code UK
+        varchar full_name
+        varchar email UK
+        varchar phone
+        varchar address
+        int home_branch_id FK
+        int tier_id FK
+        varchar status "ACTIVE|SUSPENDED|EXPIRED|CANCELLED"
+        date registration_date
+        date expiry_date
+        text notes
+        datetime created_at
+        datetime updated_at
+    }
+
+    USERS {
+        int id PK
+        varchar username UK
+        varchar full_name
+        varchar email UK
+        varchar password_hash
+        varchar role "ADMIN|LIBRARIAN|STAFF_READONLY"
+        int branch_id FK
+        boolean is_active
+        boolean must_change_password
+        datetime last_login_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    LOANS {
+        int id PK
+        varchar loan_number UK
+        int member_id FK
+        int copy_id FK "Partial UK where status='ACTIVE'"
+        int issuing_branch_id FK
+        int returned_branch_id FK
+        int issued_by_user_id FK
+        datetime checked_out_at
+        date due_date
+        datetime returned_at
+        varchar status "ACTIVE|RETURNED|LOST"
+        int renewal_count
+        text return_notes
+        varchar source_reference UK
+        datetime created_at
+        datetime updated_at
+    }
+
+    RESERVATIONS {
+        int id PK
+        varchar reservation_number UK
+        int book_id FK
+        int member_id FK "Partial UK (member_id, book_id) when active"
+        int preferred_branch_id FK
+        int allocated_copy_id FK "Partial UK when READY_FOR_PICKUP"
+        varchar status "WAITING|READY_FOR_PICKUP|FULFILLED|CANCELLED|EXPIRED"
+        datetime allocated_at
+        datetime pickup_deadline_at
+        datetime fulfilled_at
+        datetime cancelled_at
+        datetime expired_at
+        text notes
+        varchar source_reference UK
+        datetime created_at
+        datetime updated_at
+    }
+
+    FINES {
+        int id PK
+        varchar fine_number UK
+        int loan_id FK,UK
+        int member_id FK
+        int assessed_amount "Stored as integer paise"
+        int paid_amount "Stored as integer paise"
+        int waived_amount "Stored as integer paise"
+        int eligible_overdue_days
+        int daily_rate_applied "Stored as integer paise"
+        varchar status "UNPAID|PARTIALLY_PAID|PAID|WAIVED"
+        varchar reason
+        datetime assessed_at
+        varchar source_reference UK
+        datetime created_at
+        datetime updated_at
+    }
+
+    FINE_PAYMENTS {
+        int id PK
+        varchar receipt_number UK
+        int fine_id FK
+        int member_id FK
+        int received_by_user_id FK
+        int branch_id FK
+        int amount "Stored as integer paise (>0)"
+        varchar payment_method "CASH|UPI|CARD|BANK_TRANSFER"
+        varchar idempotency_key UK
+        varchar reference_note
+        datetime paid_at
+        datetime created_at
+    }
+
+    LIBRARY_HOLIDAYS {
+        int id PK
+        date holiday_date
+        varchar name
+        int branch_id FK "Nullable for network-wide closures"
+        varchar description
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    AUDIT_EVENTS {
+        int id PK
+        varchar event_type
+        varchar entity_type
+        varchar entity_id
+        int actor_user_id FK
+        int branch_id FK
+        varchar summary
+        text details_json
+        datetime created_at
+    }
+
+    IMPORT_BATCHES {
+        int id PK
+        varchar batch_key UK
+        varchar source_filename
+        int total_records
+        int accepted_count
+        int rejected_count
+        int quarantined_count
+        int duplicate_skipped_count
+        int error_count
+        int initiated_by_user_id FK
+        datetime started_at
+        datetime completed_at
+        text summary_json
+    }
+
+    IMPORT_ISSUES {
+        int id PK
+        int batch_id FK
+        varchar source_record_id
+        varchar record_type
+        varchar disposition "REJECTED|QUARANTINED|DUPLICATE_SKIPPED|ERROR"
+        varchar issue_code
+        varchar message
+        text raw_payload_json
+        datetime created_at
+    }
+
+    BOOKS ||--o{ BOOK_AUTHORS : attributed_via
+    AUTHORS ||--o{ BOOK_AUTHORS : writes
+    BOOKS ||--o{ BOOK_COPIES : instantiated_as
+    BRANCHES ||--o{ BOOK_COPIES : owns
+    MEMBERSHIP_TIERS ||--o{ MEMBERS : classifies
+    BRANCHES ||--o{ MEMBERS : home_branch
+    BRANCHES ||--o{ USERS : assigned_to
+    MEMBERS ||--o{ LOANS : borrows
+    BOOK_COPIES ||--o{ LOANS : circulates_in
+    BRANCHES ||--o{ LOANS : issued_at
+    USERS ||--o{ LOANS : processed_by
+    BOOKS ||--o{ RESERVATIONS : queued_for
+    MEMBERS ||--o{ RESERVATIONS : places
+    BRANCHES ||--o{ RESERVATIONS : preferred_pickup
+    BOOK_COPIES ||--o{ RESERVATIONS : held_by
+    LOANS ||--o| FINES : incurs
+    MEMBERS ||--o{ FINES : owes
+    FINES ||--o{ FINE_PAYMENTS : settled_by
+    MEMBERS ||--o{ FINE_PAYMENTS : pays
+    USERS ||--o{ FINE_PAYMENTS : collects
+    BRANCHES ||--o{ FINE_PAYMENTS : collected_at
+    BRANCHES ||--o{ LIBRARY_HOLIDAYS : closes_for
+    USERS ||--o{ AUDIT_EVENTS : triggers
+    BRANCHES ||--o{ AUDIT_EVENTS : scoped_to
+    USERS ||--o{ IMPORT_BATCHES : initiates
+    IMPORT_BATCHES ||--o{ IMPORT_ISSUES : logs

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_flashed_alerts %}
+{% block title %}Sign In | {{ app_name }}{% endblock %}
+
+{% block public_content %}
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-bookplate-header">
+      <span class="page-eyebrow">{{ network_name }}</span>
+      <h1 class="page-title">Pustakalaya <span style="font-weight:400; font-size:1.08rem;">(पुस्तकालय)</span></h1>
+      <p class="page-subtitle">{{ app_tagline }} · A quiet reading sanctuary for Lucknow's three branches.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {{ render_flashed_alerts(messages) }}
+    {% endwith %}
+
+    {% if not has_any_users %}
+      <div class="alert alert-warning">
+        <div class="alert-content">
+          <div>
+            <strong>First-Run Setup Required:</strong> No administrator account exists yet.
+            <div class="mt-1">
+              <a href="{{ url_for('auth.first_run_setup') }}" class="btn btn-primary btn-sm">Create Initial Administrator</a>
+            </div>
+            <div class="mt-1" style="font-size: 0.81rem;">
+              Or via CLI: <code>python scripts/initialize_db.py --prompt-admin-password</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('auth.login') }}">
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="next" value="{{ next_target }}">
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.username.id }}">Staff Username</label>
+        {{ form.username(class="form-control", autocomplete="username", autofocus=true) }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.password.id }}">Password</label>
+        {{ form.password(class="form-control", autocomplete="current-password") }}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block mt-1">Enter Pustakalaya</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

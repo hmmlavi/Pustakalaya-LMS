@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Configure Tier Policies | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Membership Tiers</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Membership Tier Policies (Strategy Parameters)</h1>
+    <p class="page-subtitle">Changes immediately apply to future checkouts, renewals, and fine calculations without rewriting historical loans.</p>
+  </div>
+</div>
+
+{% for t in tiers %}
+{% set f = forms_by_code[t.code] %}
+{% set pfx = t.code|lower %}
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">{{ t.code }} — {{ t.name }}</h2>
+    {{ status_badge('ACTIVE' if t.borrowing_enabled else 'SUSPENDED') }}
+  </div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.update_tier', tier_code=t.code) }}">
+      <input type="hidden" name="csrf_token" value="{{ f.csrf_token._value() }}">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_max_active_loans">Max Simultaneous Loans</label>
+          {{ f.max_active_loans(class="form-control", id=pfx ~ "_max_active_loans") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_loan_duration_days">Loan Duration (Days)</label>
+          {{ f.loan_duration_days(class="form-control", id=pfx ~ "_loan_duration_days") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_max_renewals">Max Renewals</label>
+          {{ f.max_renewals(class="form-control", id=pfx ~ "_max_renewals") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_renewal_duration_days">Renewal Duration (Days)</label>
+          {{ f.renewal_duration_days(class="form-control", id=pfx ~ "_renewal_duration_days") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_max_active_reservations">Max Active Reservations</label>
+          {{ f.max_active_reservations(class="form-control", id=pfx ~ "_max_active_reservations") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_grace_period_days">Grace Period (Days)</label>
+          {{ f.grace_period_days(class="form-control", id=pfx ~ "_grace_period_days") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_daily_fine_rate">Daily Fine Rate (INR)</label>
+          {{ f.daily_fine_rate(class="form-control", step="0.01", id=pfx ~ "_daily_fine_rate") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_max_fine_per_loan">Max Fine Cap / Loan (INR)</label>
+          {{ f.max_fine_per_loan(class="form-control", step="0.01", id=pfx ~ "_max_fine_per_loan") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pfx }}_fine_blocking_threshold">Blocking Threshold (INR)</label>
+          {{ f.fine_blocking_threshold(class="form-control", step="0.01", id=pfx ~ "_fine_blocking_threshold") }}
+        </div>
+      </div>
+      <div class="checkbox-row">
+        {{ f.borrowing_enabled(id=pfx ~ "_borrowing_enabled") }}
+        <label for="{{ pfx }}_borrowing_enabled">Borrowing enabled for {{ t.code }} members</label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Save {{ t.code }} Policy</button>
+    </form>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

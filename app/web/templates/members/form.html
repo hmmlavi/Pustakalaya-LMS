@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Member' if is_edit else 'Register Member' }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('members.list_members') }}">Members</a> / {{ member.member_code if is_edit else 'New Registration' }}
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ 'Edit Member ' ~ member.member_code if is_edit else 'Register Library Member' }}</h1>
+    <p class="page-subtitle">Enroll readers into BASIC, STANDARD, or PREMIUM membership policies.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-body">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.full_name.id }}">Full Name *</label>
+          {{ form.full_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.tier_code.id }}">Membership Tier *</label>
+          {{ form.tier_code(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.email.id }}">Email Address</label>
+          {{ form.email(class="form-control", placeholder="reader@example.org") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.phone.id }}">Phone Number</label>
+          {{ form.phone(class="form-control", placeholder="+91-9000012345") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.home_branch_id.id }}">Home Branch</label>
+          {{ form.home_branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.expiry_date.id }}">Membership Expiry Date</label>
+          {{ form.expiry_date(class="form-control") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="{{ form.address.id }}">Residential Address</label>
+        {{ form.address(class="form-control", rows="2") }}
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ form.notes.id }}">Staff Notes</label>
+        {{ form.notes(class="form-control", rows="2") }}
+      </div>
+
+      <div class="inline-actions">
+        <button type="submit" class="btn btn-primary">{{ 'Save Member Changes' if is_edit else 'Complete Registration' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('members.detail', member_id=member.id) if is_edit else url_for('members.list_members') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

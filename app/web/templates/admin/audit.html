@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_pagination %}
+{% block title %}Audit Log | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Audit Log</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Immutable Audit Event Log</h1>
+    <p class="page-subtitle">Append-only audit trail recorded atomically inside operational database transactions.</p>
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('admin.audit') }}" class="filter-bar">
+  <div class="filter-field">
+    <label class="form-label" for="event_type">Event Type</label>
+    <select id="event_type" name="event_type">
+      <option value="">All Event Types</option>
+      {% for et in event_types %}
+        <option value="{{ et }}" {% if selected_event_type == et %}selected{% endif %}>{{ et }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="entity_type">Entity Type</label>
+    <input id="entity_type" name="entity_type" type="text" value="{{ selected_entity_type }}" placeholder="e.g. LOAN, BOOK_COPY, FINE">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('admin.audit') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Audit Events ({{ "{:,}".format(events_page.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if events_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Occurred At</th>
+          <th>Event Type</th>
+          <th>Entity</th>
+          <th>Actor</th>
+          <th>Summary &amp; Metadata</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in events_page.items %}
+        <tr>
+          <td class="mono">#{{ ev.id }}</td>
+          <td>{{ ev.created_at|ist_dt }}</td>
+          <td class="mono"><strong>{{ ev.event_type }}</strong></td>
+          <td class="mono">{{ ev.entity_type }}:{{ ev.entity_id }}</td>
+          <td>{{ ev.actor_user.username if ev.actor_user else 'system' }}</td>
+          <td>
+            <div>{{ ev.summary }}</div>
+            {% if ev.details_json %}<code style="font-size:0.74rem; color:var(--text-muted);">{{ ev.details_json }}</code>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Matching Audit Events</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(events_page, 'admin.audit') }}
+</section>
+{% endblock %}

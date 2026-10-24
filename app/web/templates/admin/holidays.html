@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Holiday Calendar | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Holiday Calendar</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Holiday &amp; Closed-Day Calendar</h1>
+    <p class="page-subtitle">Due dates, pickup deadlines, and overdue fine assessments automatically skip closed network/branch holidays.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Add Network or Branch Holiday</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.holidays') }}">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.holiday_date.id }}">Holiday Date *</label>
+          {{ form.holiday_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.name.id }}">Holiday Name *</label>
+          {{ form.name(class="form-control", placeholder="e.g. Kartik Purnima / Branch Inventory Day") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.branch_id.id }}">Scope</label>
+          {{ form.branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.description.id }}">Description</label>
+          {{ form.description(class="form-control", placeholder="Optional note") }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">+ Register Holiday</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Configured Holidays ({{ holidays|length }})</h2></div>
+  <div class="table-wrap">
+    {% if holidays %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Holiday Name</th>
+          <th>Scope</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in holidays %}
+        <tr>
+          <td class="mono"><strong>{{ h.holiday_date.isoformat() }}</strong></td>
+          <td>{{ h.name }}{% if h.description %}<div class="text-muted" style="font-size:0.78rem;">{{ h.description }}</div>{% endif %}</td>
+          <td>{{ h.branch.name if h.branch else 'All Lucknow Branches (Network-Wide)' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.delete_holiday', holiday_id=h.id) }}" data-confirm="Remove holiday {{ h.name }} ({{ h.holiday_date.isoformat() }})?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No holidays configured.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

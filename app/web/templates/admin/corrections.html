@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Administrative Corrections | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('admin.index') }}">Administration</a> / Audited Corrections</div>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Audited Administrative Corrections</h1>
+    <p class="page-subtitle">Controlled exception workflows that preserve historical records and write mandatory justification entries to the audit log.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Reinstate LOST / DAMAGED / WITHDRAWN Copy</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('admin.corrections') }}" data-confirm="Reinstate this physical copy to AVAILABLE inventory with an administrative audit entry?">
+        <input type="hidden" name="csrf_token" value="{{ reinstate_form.csrf_token._value() }}">
+        <input type="hidden" name="correction_type" value="reinstate_copy">
+        <div class="form-group">
+          <label class="form-label" for="reinstate_copy_id">Copy Accession Number or Numeric ID *</label>
+          {{ reinstate_form.copy_id(class="form-control", id="reinstate_copy_id", placeholder="e.g. LKO-HZR-000010 or 10") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reinstate_reason">Mandatory Audit Justification *</label>
+          {{ reinstate_form.reason(class="form-control", id="reinstate_reason", placeholder="Explain why the copy is being reinstated") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Reinstate Copy to AVAILABLE</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Adjust Active Loan Due Date</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('admin.corrections') }}" data-confirm="Adjust due date on this active loan and record an administrative audit event?">
+        <input type="hidden" name="csrf_token" value="{{ due_form.csrf_token._value() }}">
+        <input type="hidden" name="correction_type" value="adjust_due_date">
+        <div class="form-group">
+          <label class="form-label" for="adjust_loan_id">Loan Number or Numeric ID *</label>
+          {{ due_form.loan_id(class="form-control", id="adjust_loan_id", placeholder="e.g. LN-20261024-ABCD1234 or 1") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ due_form.new_due_date.id }}">New Due Date *</label>
+          {{ due_form.new_due_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adjust_reason">Mandatory Audit Justification *</label>
+          {{ due_form.reason(class="form-control", id="adjust_reason", placeholder="Explain reason (e.g. emergency branch closure extension)") }}
+        </div>
+        <button type="submit" class="btn btn-accent">Apply Audited Due-Date Adjustment</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

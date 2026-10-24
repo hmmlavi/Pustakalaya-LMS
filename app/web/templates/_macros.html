@@ -1,0 +1,112 @@
+{% macro status_badge(status) -%}
+  {%- set s = (status or '')|upper -%}
+  {%- if s in ('AVAILABLE', 'ACTIVE', 'PAID', 'FULFILLED', 'ACCEPTED') -%}
+    <span class="badge badge-success"><span class="badge-glyph" aria-hidden="true">&#9679;</span>{{ s }}</span>
+  {%- elif s in ('ON_LOAN', 'READY_FOR_PICKUP', 'PARTIALLY_PAID', 'WAITING', 'QUARANTINED', 'LIBRARIAN') -%}
+    <span class="badge badge-warning"><span class="badge-glyph" aria-hidden="true">&#9670;</span>{{ s }}</span>
+  {%- elif s in ('LOST', 'DAMAGED', 'SUSPENDED', 'UNPAID', 'REJECTED', 'OVERDUE', 'ERROR') -%}
+    <span class="badge badge-danger"><span class="badge-glyph" aria-hidden="true">&#9650;</span>{{ s }}</span>
+  {%- elif s in ('RESERVED', 'ADMIN', 'PREMIUM') -%}
+    <span class="badge badge-info"><span class="badge-glyph" aria-hidden="true">&#9733;</span>{{ s }}</span>
+  {%- else -%}
+    <span class="badge badge-neutral"><span class="badge-glyph" aria-hidden="true">&#9675;</span>{{ s }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro book_cover_placeholder(book, size='md') -%}
+  {%- set v_idx = ((book.id or 0) % 5) -%}
+  {%- set cls = 'book-cover-plate book-cover-plate--v' ~ v_idx -%}
+  {%- if size == 'lg' -%}{%- set cls = cls ~ ' book-cover-plate--lg' -%}{%- endif -%}
+  {%- if size == 'mini' -%}{%- set cls = cls ~ ' book-cover-plate--mini' -%}{%- endif -%}
+  <div class="{{ cls }}" aria-hidden="true">
+    {% if size == 'mini' %}
+      <span class="book-cover-monogram">{{ (book.title or 'B')[:1]|upper }}</span>
+    {% else %}
+      <span class="book-cover-cat">{{ (book.category or 'Archive')[:14] }}</span>
+      <span class="book-cover-monogram">{{ book.title }}</span>
+      <span class="book-cover-foot">{{ book.publication_year or 'Ed.' }}</span>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro horizon_theme_toggle(toggle_id, resolved_theme='day') -%}
+  <button
+    id="{{ toggle_id }}"
+    type="button"
+    class="horizon-theme-toggle"
+    data-theme-toggle="true"
+    aria-pressed="{{ 'true' if resolved_theme == 'night' else 'false' }}"
+    aria-label="{{ 'Moonlit forest dark theme active. Activate to switch to peaceful botanical light theme.' if resolved_theme == 'night' else 'Peaceful botanical light theme active. Activate to switch to moonlit forest dark theme.' }}"
+  >
+    <span class="horizon-orb-track" aria-hidden="true">
+      <svg class="horizon-stars" viewBox="0 0 18 14" fill="currentColor">
+        <circle cx="4" cy="4" r="1.05"/>
+        <circle cx="11" cy="3" r="0.82"/>
+        <circle cx="7.5" cy="9.5" r="0.95"/>
+        <circle cx="14" cy="8" r="0.68"/>
+      </svg>
+      <span class="horizon-orb">
+        <svg class="horizon-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2.5v2.3M12 19.2v2.3M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.5 12h2.3M19.2 12h2.3M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/>
+        </svg>
+        <svg class="horizon-icon-moon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.4 14.8A8.5 8.5 0 0 1 9.2 3.6a8.5 8.5 0 1 0 11.2 11.2z"/>
+        </svg>
+      </span>
+    </span>
+    <span class="horizon-label" data-horizon-label>{{ 'Nightfall' if resolved_theme == 'night' else 'Daylight' }}</span>
+  </button>
+{%- endmacro %}
+
+{% macro render_flashed_alerts(messages) -%}
+  {% if messages %}
+    <div class="alerts-stack" role="status" aria-live="polite">
+      {% for category, message in messages %}
+        {% set cat = category if category in ('success','warning','danger','info') else 'info' %}
+        <div class="alert alert-{{ cat }}">
+          <div class="alert-content">
+            {% if cat == 'success' %}
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            {% elif cat == 'danger' %}
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+            {% elif cat == 'warning' %}
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+            {% else %}
+              <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+          <button type="button" class="alert-dismiss" data-alert-dismiss aria-label="Dismiss notification">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro render_pagination(page_obj, endpoint) -%}
+  {% if page_obj and page_obj.pages > 1 %}
+  <nav class="pagination" aria-label="Pagination">
+    <div>
+      Showing page <strong>{{ page_obj.page }}</strong> of <strong>{{ page_obj.pages }}</strong>
+      ({{ "{:,}".format(page_obj.total) }} total records)
+    </div>
+    <div class="pagination-controls">
+      {% set args = request.args.to_dict() %}
+      {% if page_obj.has_prev %}
+        {% set _ = args.update({'page': page_obj.prev_num}) %}
+        <a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, **args) }}">&larr; Previous</a>
+      {% else %}
+        <button class="btn btn-secondary btn-sm" type="button" disabled>&larr; Previous</button>
+      {% endif %}
+
+      {% if page_obj.has_next %}
+        {% set _ = args.update({'page': page_obj.next_num}) %}
+        <a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, **args) }}">Next &rarr;</a>
+      {% else %}
+        <button class="btn btn-secondary btn-sm" type="button" disabled>Next &rarr;</button>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+{%- endmacro %}

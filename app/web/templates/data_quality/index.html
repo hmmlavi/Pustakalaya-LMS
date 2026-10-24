@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Data Quality &amp; Historical Imports | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Data Quality &amp; Historical Import Quarantine</h1>
+    <p class="page-subtitle">Transparent validation, rejection, and quarantine ledger protecting operational library tables from malformed legacy data.</p>
+  </div>
+  {% if current_user.is_admin and source_exists %}
+  <div class="header-actions">
+    <form method="post" action="{{ url_for('data_quality.run_import') }}" data-confirm="Execute idempotent historical import from configured legacy JSON fixture?">
+      {{ csrf_form.hidden_tag() }}
+      <button type="submit" class="btn btn-primary">Run Idempotent Historical Import</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Historical Import Execution Batches</h2></div>
+  <div class="table-wrap">
+    {% if dq_summary.batches %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Batch Key</th>
+          <th>Source File</th>
+          <th>Started</th>
+          <th>Total</th>
+          <th>Accepted</th>
+          <th>Quarantined</th>
+          <th>Rejected</th>
+          <th>Duplicates Skipped</th>
+          <th>Errors</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in dq_summary.batches %}
+        <tr>
+          <td class="mono"><a href="{{ url_for('data_quality.index', batch_id=b.id) }}"><strong>{{ b.batch_key }}</strong></a></td>
+          <td class="mono">{{ b.source_filename }}</td>
+          <td>{{ b.started_at|ist_dt }}</td>
+          <td>{{ b.total_records }}</td>
+          <td><span class="badge badge-success">{{ b.accepted_count }}</span></td>
+          <td><span class="badge badge-warning">{{ b.quarantined_count }}</span></td>
+          <td><span class="badge badge-danger">{{ b.rejected_count }}</span></td>
+          <td>{{ b.duplicate_skipped_count }}</td>
+          <td>{{ b.error_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Import Batches Executed Yet</h3>
+      <p>Run <code>python scripts/import_history.py</code> or click <strong>Run Idempotent Historical Import</strong> above.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        Batch Breakdown by Issue Code{% if dq_summary.selected_batch %} ({{ dq_summary.selected_batch.batch_key }}){% endif %}
+      </h2>
+    </div>
+    <div class="table-wrap">
+      {% if dq_summary.breakdown_by_code %}
+      <table class="data-table">
+        <thead><tr><th>Disposition</th><th>Issue Code</th><th>Count</th><th>Filter</th></tr></thead>
+        <tbody>
+          {% for disp, code, cnt in dq_summary.breakdown_by_code %}
+          <tr>
+            <td>{{ status_badge(disp) }}</td>
+            <td class="mono"><strong>{{ code }}</strong></td>
+            <td><strong>{{ cnt }}</strong></td>
+            <td><a class="btn btn-secondary btn-sm" href="{{ url_for('data_quality.index', batch_id=selected_batch_id or '', issue_code=code) }}">Inspect</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>No quarantined or rejected rows logged yet.</p></div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Data Integrity Policy</h2></div>
+    <div class="card-body">
+      <p>Pustakalaya never fabricates missing historical dates or silently loads inconsistent legacy rows into operational tables:</p>
+      <ul style="margin:0.4rem 0 0 1.2rem; padding:0;">
+        <li><strong>ACCEPTED:</strong> Validated end-to-end against ISBN checksums, branch/member FKs, date ordering, and state invariants.</li>
+        <li><strong>QUARANTINED:</strong> Held in staging for human librarian inspection (missing return date on closed loan, excessive renewals, unexplained fine discrepancy).</li>
+        <li><strong>REJECTED:</strong> Structurally invalid (malformed ISBN checksum, inverted dates, nonexistent member/branch/copy ref, negative/overpaid fine, overlapping active loan).</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<form method="get" action="{{ url_for('data_quality.index') }}" class="filter-bar">
+  {% if selected_batch_id %}<input type="hidden" name="batch_id" value="{{ selected_batch_id }}">{% endif %}
+  <div class="filter-field">
+    <label class="form-label" for="disposition">Disposition</label>
+    <select id="disposition" name="disposition">
+      <option value="">All Dispositions</option>
+      {% for d in dispositions %}
+        <option value="{{ d }}" {% if selected_disposition == d %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="issue_code">Issue Code</label>
+    <input id="issue_code" name="issue_code" type="text" value="{{ selected_issue_code }}" placeholder="e.g. MALFORMED_ISBN">
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter Issues</button>
+    <a class="btn btn-secondary" href="{{ url_for('data_quality.index') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Quarantined &amp; Rejected Legacy Records ({{ issues_page.total }})</h2></div>
+  <div class="table-wrap">
+    {% if issues_page.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Source ID</th>
+          <th>Record Type</th>
+          <th>Disposition</th>
+          <th>Issue Code &amp; Reason</th>
+          <th>Raw Source Payload</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for issue in issues_page.items %}
+        <tr>
+          <td class="mono"><strong>{{ issue.source_record_id }}</strong></td>
+          <td>{{ issue.record_type }}</td>
+          <td>{{ status_badge(issue.disposition) }}</td>
+          <td>
+            <div class="mono"><strong>{{ issue.issue_code }}</strong></div>
+            <div class="text-muted" style="font-size:0.81rem;">{{ issue.message }}</div>
+          </td>
+          <td>
+            <code style="font-size:0.75rem; word-break:break-all;">{{ issue.raw_payload_json[:220] }}{% if issue.raw_payload_json|length > 220 %}…{% endif %}</code>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Matching Issue Records</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(issues_page, 'data_quality.index') }}
+</section>
+{% endblock %}

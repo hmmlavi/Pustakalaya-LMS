@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Membership Tiers | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('members.list_members') }}">Members</a> / Membership Tiers
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Membership Tier Policies</h1>
+    <p class="page-subtitle">Configured borrowing limits, renewal rules, grace periods, and overdue fine rates.</p>
+  </div>
+  {% if current_user.is_admin %}
+  <div class="header-actions">
+    <a class="btn btn-primary" href="{{ url_for('admin.tiers') }}">Configure Tier Policies</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="grid-3">
+  {% for t in tiers %}
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">{{ t.name }}</h2>
+      {{ status_badge(t.code) }}
+    </div>
+    <div class="card-body">
+      <p class="text-muted">{{ t.description }}</p>
+      <p><strong>Max Active Loans:</strong> {{ t.max_active_loans }} copies</p>
+      <p><strong>Standard Loan Period:</strong> {{ t.loan_duration_days }} days</p>
+      <p><strong>Max Renewals:</strong> {{ t.max_renewals }} ({{ t.renewal_duration_days }} days each)</p>
+      <p><strong>Max Active Reservations:</strong> {{ t.max_active_reservations }}</p>
+      <p><strong>Grace Period:</strong> {{ t.grace_period_days }} operating day(s)</p>
+      <p><strong>Daily Overdue Rate:</strong> {{ t.daily_fine_rate|inr }} / day</p>
+      <p><strong>Max Fine Cap per Loan:</strong> {{ t.max_fine_per_loan|inr }}</p>
+      <p><strong>Borrowing Block Threshold:</strong> {{ t.fine_blocking_threshold|inr }}</p>
+      <p><strong>Borrowing Enabled:</strong> {{ 'Yes' if t.borrowing_enabled else 'Disabled' }}</p>
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

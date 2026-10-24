@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Edit Author | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('books.authors') }}">Authors</a> / Edit #{{ author.id }}
+</div>
+<div class="page-header">
+  <div><h1 class="page-title">Edit Author — {{ author.full_name }}</h1></div>
+</div>
+<section class="card">
+  <div class="card-body">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ form.full_name.id }}">Author Full Name *</label>
+          {{ form.full_name(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ form.birth_year.id }}">Birth Year</label>
+          {{ form.birth_year(class="form-control") }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ form.biography.id }}">Biography</label>
+        {{ form.biography(class="form-control", rows="3") }}
+      </div>
+      <div class="inline-actions">
+        <button type="submit" class="btn btn-primary">Save Author</button>
+        <a class="btn btn-secondary" href="{{ url_for('books.authors') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

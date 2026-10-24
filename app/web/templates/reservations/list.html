@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Reservations | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reservation Queues &amp; Pickup Holds</h1>
+    <p class="page-subtitle">Deterministic FIFO waiting queues, automatic return allocation, and pickup deadline management.</p>
+  </div>
+  {% if current_user.can_circulate %}
+  <div class="header-actions">
+    <form method="post" action="{{ url_for('reservations.process_expired') }}" data-confirm="Process all expired READY_FOR_PICKUP holds and reallocate copies to next eligible members?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary">Process Expired Pickup Holds</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if current_user.can_circulate %}
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Create Reservation (When Eligible Copies Are Unavailable)</h2></div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('reservations.create') }}">
+      {{ create_form.hidden_tag() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.member_identifier.id }}">Member Code or ID *</label>
+          {{ create_form.member_identifier(class="form-control", placeholder="e.g. MEM-000001") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.book_id.id }}">Catalog Book ID *</label>
+          {{ create_form.book_id(class="form-control", placeholder="e.g. 601") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.preferred_branch_id.id }}">Preferred Pickup Branch</label>
+          {{ create_form.preferred_branch_id(class="form-control") }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ create_form.notes.id }}">Notes</label>
+          {{ create_form.notes(class="form-control", placeholder="Optional request note") }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">+ Place FIFO Reservation</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+<form method="get" action="{{ url_for('reservations.list_reservations') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="q">Reservation #, Title, or Member</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="Search reservations...">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="status">Reservation Status</label>
+    <select id="status" name="status">
+      <option value="">All Statuses</option>
+      {% for st in statuses %}
+        <option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('reservations.list_reservations') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Reservation Records ({{ "{:,}".format(results.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Reservation #</th>
+          <th>Book Title</th>
+          <th>Member</th>
+          <th>Branch</th>
+          <th>Status / Queue Pos</th>
+          <th>Allocated Copy &amp; Pickup Deadline</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results.items %}
+        {% set pos = queue_positions.get(r.id) %}
+        <tr>
+          <td class="mono">
+            <strong>{{ r.reservation_number }}</strong>
+            <div class="text-muted" style="font-size:0.77rem;">{{ r.created_at|ist_dt }}</div>
+          </td>
+          <td><a href="{{ url_for('books.detail', book_id=r.book.id) }}">{{ r.book.title }}</a></td>
+          <td>
+            <a href="{{ url_for('members.detail', member_id=r.member.id) }}">{{ r.member.member_code }}</a>
+            <div class="text-muted" style="font-size:0.8rem;">{{ r.member.full_name }}</div>
+          </td>
+          <td>{{ r.preferred_branch.code if r.preferred_branch else 'Any' }}</td>
+          <td>
+            {{ status_badge(r.status) }}
+            {% if pos %}<div class="text-muted" style="font-size:0.78rem;">FIFO Position <strong>#{{ pos }}</strong></div>{% endif %}
+          </td>
+          <td>
+            {% if r.allocated_copy %}
+              <div class="mono"><strong>{{ r.allocated_copy.accession_number }}</strong> ({{ r.allocated_copy.owning_branch.code }})</div>
+              {% if r.pickup_deadline_at %}
+                <div class="text-muted" style="font-size:0.78rem;">Deadline: {{ r.pickup_deadline_at|ist_dt }}</div>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="inline-actions">
+              {% if r.status == 'READY_FOR_PICKUP' and r.allocated_copy and current_user.can_circulate %}
+                <a class="btn btn-primary btn-sm" href="{{ url_for('circulation.index', member=r.member.member_code, copy=r.allocated_copy.accession_number) }}">Fulfill Pickup</a>
+              {% endif %}
+              {% if r.status in ('WAITING', 'READY_FOR_PICKUP') and current_user.can_circulate %}
+                <form method="post" action="{{ url_for('reservations.cancel', reservation_id=r.id) }}" data-confirm="Cancel reservation {{ r.reservation_number }}?">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="reason" value="Cancelled at reservation desk">
+                  <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <h3>No Reservations in This View</h3>
+      <p>Readers can join the FIFO hold queue whenever all circulating copies of a title are currently checked out.</p>
+      <div class="mt-1"><a class="btn btn-secondary btn-sm" href="{{ url_for('reservations.list_reservations') }}">Show Active Holds</a></div>
+    </div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'reservations.list_reservations') }}
+</section>
+{% endblock %}

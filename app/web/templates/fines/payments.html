@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, render_pagination %}
+{% block title %}Fine Payment Receipts | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('fines.list_fines') }}">Fines &amp; Payments</a> / Payment History
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fine Collection History</h1>
+    <p class="page-subtitle">Immutable payment receipts across cash, UPI, card, and bank transfer settlements.</p>
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('fines.payments_history') }}" class="filter-bar" role="search">
+  <div class="filter-field" style="flex: 2 1 240px;">
+    <label class="form-label" for="q">Receipt #, Fine #, or Member</label>
+    <input id="q" name="q" type="text" value="{{ query }}" placeholder="Search receipts...">
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="method">Method</label>
+    <select id="method" name="method">
+      <option value="">All Methods</option>
+      {% for m in methods %}
+        <option value="{{ m }}" {% if selected_method == m %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label class="form-label" for="branch_id">Collecting Branch</label>
+    <select id="branch_id" name="branch_id">
+      <option value="">All Branches</option>
+      {% for br in branches %}
+        <option value="{{ br.id }}" {% if selected_branch_id == br.id %}selected{% endif %}>{{ br.code }} — {{ br.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a class="btn btn-secondary" href="{{ url_for('fines.payments_history') }}">Reset</a>
+  </div>
+</form>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Payment Receipts ({{ "{:,}".format(results.total) }})</h2></div>
+  <div class="table-wrap">
+    {% if results.items %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Receipt #</th>
+          <th>Fine #</th>
+          <th>Member</th>
+          <th>Branch</th>
+          <th>Method</th>
+          <th>Amount</th>
+          <th>Paid At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in results.items %}
+        <tr>
+          <td class="mono"><strong>{{ p.receipt_number }}</strong></td>
+          <td class="mono"><a href="{{ url_for('fines.detail', fine_id=p.fine.id) }}">{{ p.fine.fine_number }}</a></td>
+          <td><a href="{{ url_for('members.detail', member_id=p.member.id) }}">{{ p.member.member_code }} · {{ p.member.full_name }}</a></td>
+          <td>{{ p.branch.code if p.branch else '—' }}</td>
+          <td>{{ status_badge(p.payment_method) }}</td>
+          <td><strong>{{ p.amount|inr }}</strong></td>
+          <td>{{ p.paid_at|ist_dt }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><h3>No Payment Receipts Found</h3></div>
+    {% endif %}
+  </div>
+  {{ render_pagination(results, 'fines.payments_history') }}
+</section>
+{% endblock %}

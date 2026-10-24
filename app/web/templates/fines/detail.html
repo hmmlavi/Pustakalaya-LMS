@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}Fine {{ fine.fine_number }} | {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('fines.list_fines') }}">Fines &amp; Payments</a> / {{ fine.fine_number }}
+</div>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fine Ledger — {{ fine.fine_number }}</h1>
+    <p class="page-subtitle">Member: <a href="{{ url_for('members.detail', member_id=fine.member.id) }}">{{ fine.member.member_code }} · {{ fine.member.full_name }}</a></p>
+  </div>
+  <div>{{ status_badge(fine.status) }}</div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Assessment Breakdown</h2></div>
+    <div class="card-body">
+      <p><strong>Associated Loan:</strong> <span class="mono">{{ fine.loan.loan_number }}</span> ({{ fine.loan.copy.accession_number }} — {{ fine.loan.copy.book.title }})</p>
+      <p><strong>Branch:</strong> {{ fine.loan.issuing_branch.code }} — {{ fine.loan.issuing_branch.name }}</p>
+      <p><strong>Chargeable Overdue Days:</strong> {{ fine.eligible_overdue_days }} day(s) @ {{ fine.daily_rate_applied|inr }}/day</p>
+      <p><strong>Original Assessed Fine:</strong> {{ fine.assessed_amount|inr }}</p>
+      <p><strong>Payments Received:</strong> {{ fine.paid_amount|inr }}</p>
+      {% if fine.waived_amount > 0 %}
+        <p><strong>Waived Amount:</strong> {{ fine.waived_amount|inr }}</p>
+      {% endif %}
+      <p><strong>Current Outstanding Balance:</strong> <strong style="font-size:1.15rem;">{{ fine.outstanding_balance|inr }}</strong></p>
+      <p class="text-muted" style="font-size:0.83rem;">Assessed at {{ fine.assessed_at|ist_dt }} · {{ fine.reason }}</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header"><h2 class="card-title">Record Full or Partial Payment</h2></div>
+    <div class="card-body">
+      {% if fine.outstanding_balance > 0 and current_user.can_circulate %}
+      <form method="post" action="{{ url_for('fines.pay', fine_id=fine.id) }}">
+        {{ pay_form.hidden_tag() }}
+        <div class="form-group">
+          <label class="form-label" for="{{ pay_form.amount.id }}">Payment Amount (INR, max {{ fine.outstanding_balance }}) *</label>
+          {{ pay_form.amount(class="form-control", step="0.01", min="0.01", max=fine.outstanding_balance) }}
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="{{ pay_form.payment_method.id }}">Payment Method *</label>
+            {{ pay_form.payment_method(class="form-control") }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="{{ pay_form.branch_id.id }}">Collecting Branch</label>
+            {{ pay_form.branch_id(class="form-control") }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ pay_form.reference_note.id }}">Receipt / Reference Note</label>
+          {{ pay_form.reference_note(class="form-control", placeholder="e.g. Cash counter or UPI ref") }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Record Payment</button>
+      </form>
+
+      {% if current_user.is_admin %}
+      <hr style="border:none; border-top:1px solid var(--border-subtle); margin:1.1rem 0;">
+      <form method="post" action="{{ url_for('fines.waive', fine_id=fine.id) }}" data-confirm="Waive the remaining INR {{ fine.outstanding_balance }} on fine {{ fine.fine_number }}?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label class="form-label" for="{{ waive_form.reason.id }}">Administrator Waiver Justification *</label>
+          {{ waive_form.reason(class="form-control", placeholder="Document reason for waiving remaining balance") }}
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm">Waive Remaining Balance</button>
+      </form>
+      {% endif %}
+      {% elif fine.outstanding_balance <= 0 %}
+      <div class="empty-state">
+        <h3>Fine Settled</h3>
+        <p>This fine has zero remaining balance. The original assessment and payment receipts remain permanently in the ledger.</p>
+      </div>
+      {% else %}
+      <div class="empty-state"><p>Read-only staff view. Sign in as Librarian or Administrator to record payments.</p></div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-header"><h2 class="card-title">Payment Receipt History ({{ fine.payments|length }})</h2></div>
+  <div class="table-wrap">
+    {% if fine.payments %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Receipt #</th>
+          <th>Amount Paid</th>
+          <th>Method</th>
+          <th>Paid At</th>
+          <th>Reference Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in fine.payments %}
+        <tr>
+          <td class="mono"><strong>{{ p.receipt_number }}</strong></td>
+          <td><strong>{{ p.amount|inr }}</strong></td>
+          <td>{{ status_badge(p.payment_method) }}</td>
+          <td>{{ p.paid_at|ist_dt }}</td>
+          <td>{{ p.reference_note or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>No payments recorded against this fine yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
