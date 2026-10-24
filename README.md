@@ -5,6 +5,16 @@
 
 ---
 
+## Download the Windows release
+
+The latest stable Windows release is available on the [Pustakalaya-LMS v1.0.0 release page](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0):
+
+- [Pustakalaya.exe](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya.exe) — standalone Windows executable.
+- [Pustakalaya-windows-portable.zip](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/Pustakalaya-windows-portable.zip) — portable package.
+- [SHA256SUMS.txt](https://github.com/hmmlavi/Pustakalaya-LMS/releases/download/v1.0.0/SHA256SUMS.txt) — download checksums.
+
+See [Quick Start — Windows](#quick-start--windows-powershell) below for first-run and data-storage instructions.
+
 ## Key Capabilities
 
 - **4-Layer Architecture & Rich Domain Model**: Clean separation across Domain (`app/domain`), Persistence/Repositories (`app/models`, `app/repositories`, `app/infrastructure`), Application Services (`app/services`), and Web Presentation (`app/web`).
