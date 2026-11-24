@@ -1,5 +1,9 @@
 # Pustakalaya
 
+<p align="center">
+  <img src="app/web/static/images/branding/pustakalaya.svg" alt="Pustakalaya logo" width="112">
+</p>
+
 **Pustakalaya (पुस्तकालय)** is an offline-ready library management system for cataloging books, managing physical copies across branches, handling memberships and circulation, processing reservations and fines, and maintaining an auditable operational record.
 
 It is designed for the Lucknow Public Library Network and runs locally with a Flask web interface backed by SQLite. A Windows executable and portable ZIP are available from the [v1.0.0 release](https://github.com/hmmlavi/Pustakalaya-LMS/releases/tag/v1.0.0).
