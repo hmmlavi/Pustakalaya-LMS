@@ -710,6 +710,13 @@ html[data-ambience="minimal"] .forest-firefly {
   transition: transform 180ms ease, border-color 180ms ease;
 }
 
+.brand-mark img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .sidebar-brand-link:hover .brand-mark {
   transform: translateY(-1px);
   border-color: rgba(167, 197, 213, 0.55);
@@ -2480,6 +2487,14 @@ html[data-theme="night"] .tab-pill:hover {
   border-radius: var(--radius-lg);
   padding: 2.05rem;
   box-shadow: var(--depth-dialog);
+}
+
+.auth-brand-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  margin: 0 auto 0.85rem;
 }
 
 .auth-bookplate-header {
