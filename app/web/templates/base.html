@@ -9,6 +9,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/branding/pustakalaya.svg') }}">
   <title>{% block title %}{{ app_name }} — {{ app_tagline }}{% endblock %}</title>
   <script>
     (function () {
@@ -82,12 +83,7 @@
     <div class="sidebar-brand">
       <a class="sidebar-brand-link" href="{{ url_for('dashboard.index') }}">
         <span class="brand-mark" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            <path d="M12 7c2.2 0 3.8 1.6 3.8 3.8-2.2 0-3.8-1.6-3.8-3.8z"/>
-            <path d="M12 10.8V14"/>
-          </svg>
+          <img src="{{ url_for('static', filename='images/branding/pustakalaya.svg') }}" alt="" width="32" height="32">
         </span>
         <span>
           <span class="brand-title">Pustakalaya</span>
